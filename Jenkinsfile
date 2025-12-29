@@ -9,15 +9,15 @@ node {
       file(credentialsId: 'dotween-pro-zip', variable: 'DOTWEEN_ZIP')
     ]) {
       powershell '''
-        Copy-Item "$env:GS_JSON" "Assets\google-services.json" -Force
+        Copy-Item "$env:GS_JSON" "Assets\\google-services.json" -Force
 
         Write-Host "Injecting DOTween Pro..."
 
         $zipPath = "$env:DOTWEEN_ZIP"
         $tempRoot = Join-Path $env:WORKSPACE "_temp_dotween"
-        $destPluginsDir = "Assets\Plugins"
-        $destDemigiantDir = "Assets\Plugins\Demigiant"
-        $destDemigiantMeta = "Assets\Plugins\Demigiant.meta"
+        $destPluginsDir = "Assets\\Plugins"
+        $destDemigiantDir = "Assets\\Plugins\\Demigiant"
+        $destDemigiantMeta = "Assets\\Plugins\\Demigiant.meta"
 
         if (Test-Path $tempRoot) { Remove-Item $tempRoot -Recurse -Force }
         New-Item -ItemType Directory -Force -Path $tempRoot | Out-Null
