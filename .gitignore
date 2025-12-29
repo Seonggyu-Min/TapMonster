@@ -74,13 +74,8 @@ crashlytics-build.properties
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
 user.keystore
-/Assets/Plugins
-/Assets/Editor Default Resources
-/Assets/ExternalDependencyManager
-/Assets/Firebase
 Assets/StreamingAssets/google-services-desktop.json
 Assets/google-services.json
-/Assets/TextMesh Pro
-/Assets/EditorAttributes
-/Assets/GoogleMobileAds
-/Assets/GeneratedLocalRepo
+Assets/Plugins/Photon/PhotonUnityNetworking/Resources/PhotonServerSettings.asset
+/Assets/Plugins/Demigiant
+/Assets/Plugins/UnityEditorDarkMode
