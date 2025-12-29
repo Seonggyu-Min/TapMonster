@@ -1,5 +1,9 @@
-stage('Inject Firebase + DOTween') {
-  steps {
+node {
+  stage('Checkout') {
+    checkout scm
+  }
+
+  stage('Inject Firebase + DOTween') {
     withCredentials([
       file(credentialsId: 'firebase-google-services-json', variable: 'GS_JSON'),
       file(credentialsId: 'dotween-pro-zip', variable: 'DOTWEEN_ZIP')
