@@ -1,3 +1,6 @@
+Write-Host "[CI] build_android.ps1 path: $PSCommandPath"
+Write-Host "[CI] build_android.ps1 sha1: $((Get-FileHash $PSCommandPath -Algorithm SHA1).Hash)"
+
 $ErrorActionPreference = "Stop"
 
 $unityExe = "C:\Program Files\Unity\Hub\Editor\2022.3.62f2\Editor\Unity.exe"
