@@ -90,8 +90,8 @@ node {
         $logText = ""
         if (Test-Path $logPath) { $logText = Get-Content $logPath -Raw }
 
-        $hasSuccessMarker = $logText -match "\[CI\] Build succeeded"
-        $hasBuildException = $logText -match "\[CI\] Build exception"
+        $hasSuccessMarker = $logText -match '\[CI\] Build succeeded'
+        $hasBuildException = $logText -match '\[CI\] Build exception'
 
         $apk = Get-ChildItem -Path $buildDir -Filter *.apk -ErrorAction SilentlyContinue | Select-Object -First 1
         $hasApk = $null -ne $apk
