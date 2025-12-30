@@ -69,9 +69,9 @@ node {
       powershell '''
         $ErrorActionPreference = "Stop"
 
-        $unityExe = "C:\Program Files\Unity\Hub\Editor\2022.3.62f2\Editor\Unity.exe"
-        $logPath = Join-Path $env:WORKSPACE "Build\unity_build.log"
-        $buildDir = Join-Path $env:WORKSPACE "Build\Android"
+        $unityExe = "C:\\Program Files\\Unity\\Hub\\Editor\\2022.3.62f2\\Editor\\Unity.exe"
+        $logPath = Join-Path $env:WORKSPACE "Build\\unity_build.log"
+        $buildDir = Join-Path $env:WORKSPACE "Build\\Android"
 
         if (Test-Path $logPath) { Remove-Item $logPath -Force }
 
