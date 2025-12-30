@@ -61,34 +61,47 @@ node {
   }
 
   stage('Build Android (APK)') {
-    powershell '''
-      $ErrorActionPreference = "Stop"
+    withCredentials([
+      file(credentialsId: 'android-keystore-file', variable: 'ANDROID_KEYSTORE'),
+      string(credentialsId: 'android-keystore-pass', variable: 'ANDROID_KEYSTORE_PASS'),
+      string(credentialsId: 'android-keyalias-pass', variable: 'ANDROID_KEYALIAS_PASS')
+    ]) {
+      powershell '''
+        $ErrorActionPreference = "Stop"
 
-      $unityExe = "C:\\Program Files\\Unity\\Hub\\Editor\\2022.3.62f2\\Editor\\Unity.exe"
+        $unityExe = "C:\\Program Files\\Unity\\Hub\\Editor\\2022.3.62f2\\Editor\\Unity.exe"
+        if (!(Test-Path $unityExe)) {
+          Write-Error "[CI] Unity.exe not found: $unityExe"
+          exit 1
+        }
 
-      if (!(Test-Path $unityExe)) {
-        Write-Error "[CI] Unity.exe not found: $unityExe"
-        exit 1
-      }
+        $buildDir = Join-Path $env:WORKSPACE "Build\\Android"
+        New-Item -ItemType Directory -Force -Path $buildDir | Out-Null
+        Write-Host "[CI] Build dir prepared: $buildDir"
 
-      $buildDir = Join-Path $env:WORKSPACE "Build\\Android"
-      New-Item -ItemType Directory -Force -Path $buildDir | Out-Null
-      Write-Host "[CI] Build dir prepared: $buildDir"
+        $env:CI_KEYSTORE_PATH = $env:ANDROID_KEYSTORE
+        $env:CI_KEYSTORE_PASS = $env:ANDROID_KEYSTORE_PASS
+        $env:CI_KEYALIAS_NAME = "tapmonster"
+        $env:CI_KEYALIAS_PASS = $env:ANDROID_KEYALIAS_PASS
 
-      & $unityExe `
-        -batchmode -nographics -quit `
-        -projectPath "$env:WORKSPACE" `
-        -executeMethod BuildScript.BuildAndroidApk `
-        -workspace "$env:WORKSPACE" `
-        -logFile "$env:WORKSPACE\\Build\\unity_build.log"
+        Write-Host "[CI] Keystore path injected: $env:CI_KEYSTORE_PATH"
+        Write-Host "[CI] Keyalias name: $env:CI_KEYALIAS_NAME"
 
-      if ($LASTEXITCODE -ne 0) {
-        Write-Error "[CI] Unity returned exit code: $LASTEXITCODE"
-        exit $LASTEXITCODE
-      }
+        & $unityExe `
+          -batchmode -nographics -quit `
+          -projectPath "$env:WORKSPACE" `
+          -executeMethod BuildScript.BuildAndroidApk `
+          -workspace "$env:WORKSPACE" `
+          -logFile "$env:WORKSPACE\\Build\\unity_build.log"
 
-      Write-Host "[CI] Unity build finished"
-      Get-ChildItem "$env:WORKSPACE\\Build\\Android" -Force | ForEach-Object { Write-Host (" - " + $_.FullName) }
-    '''
+        if ($LASTEXITCODE -ne 0) {
+          Write-Error "[CI] Unity returned exit code: $LASTEXITCODE"
+          exit $LASTEXITCODE
+        }
+
+        Write-Host "[CI] Unity build finished"
+        Get-ChildItem "$env:WORKSPACE\\Build\\Android" -Force | ForEach-Object { Write-Host (" - " + $_.FullName) }
+      '''
+    }
   }
 }
