@@ -1,9 +1,31 @@
 $ErrorActionPreference = "Stop"
 
+function Invoke-RobocopySafe {
+  param(
+    [Parameter(Mandatory=$true)][string]$Source,
+    [Parameter(Mandatory=$true)][string]$Dest
+  )
+
+  if (-not (Test-Path $Source)) {
+    throw "[CI] robocopy source not found: $Source"
+  }
+
+  New-Item -ItemType Directory -Force -Path $Dest | Out-Null
+
+  robocopy $Source $Dest /E /NFL /NDL /NJH /NJS | Out-Null
+
+  $code = $LASTEXITCODE
+  Write-Host "[CI] robocopy exit code = $code (0~7 = success, 8+ = failure)"
+
+  if ($code -ge 8) {
+    throw "[CI] robocopy failed with exit code $code"
+  }
+}
+
 Write-Host "[CI] ===== Inject Firebase + DOTween (NO UNITY BUILD) ====="
 Write-Host "[CI] WORKSPACE   = $env:WORKSPACE"
-Write-Host "[CI] GS_JSON     = $env:GS_JSON"
-Write-Host "[CI] DOTWEEN_ZIP = $env:DOTWEEN_ZIP"
+Write-Host "[CI] GS_JSON     = ****"
+Write-Host "[CI] DOTWEEN_ZIP = ****"
 
 if ([string]::IsNullOrWhiteSpace($env:WORKSPACE)) {
   throw "[CI] WORKSPACE env is empty. Jenkins workspace is not set."
@@ -29,33 +51,49 @@ try {
   Write-Host "[CI] Expanding DOTween zip -> $tmpDir"
   Expand-Archive -Path $env:DOTWEEN_ZIP -DestinationPath $tmpDir -Force
 
-  $pluginsInZip = Join-Path $tmpDir "Plugins"
+  $pluginsDir = Get-ChildItem -Path $tmpDir -Directory -Recurse -Filter "Plugins" -ErrorAction SilentlyContinue |
+                Select-Object -First 1
+  $assetsDir  = Get-ChildItem -Path $tmpDir -Directory -Recurse -Filter "Assets" -ErrorAction SilentlyContinue |
+                Select-Object -First 1
 
-  $assetsInZip  = Join-Path $tmpDir "Assets"
+  if ($pluginsDir) {
+    Write-Host "[CI] Found Plugins folder at: $($pluginsDir.FullName)"
 
-  if (Test-Path $pluginsInZip) {
     $dstPlugins = Join-Path $env:WORKSPACE "Plugins"
-    New-Item -ItemType Directory -Force -Path $dstPlugins | Out-Null
+    Invoke-RobocopySafe -Source $pluginsDir.FullName -Dest $dstPlugins
 
-    Write-Host "[CI] Detected Plugins/ in zip. Merging -> $dstPlugins"
-    robocopy $pluginsInZip $dstPlugins /E /NFL /NDL /NJH /NJS | Out-Null
-
-    $pluginsMetaInZip = Join-Path $tmpDir "Plugins.meta"
-    if (Test-Path $pluginsMetaInZip) {
-      Copy-Item -Force $pluginsMetaInZip (Join-Path $env:WORKSPACE "Plugins.meta")
+    $pluginsMetaCandidate = Join-Path $pluginsDir.Parent.FullName "Plugins.meta"
+    if (Test-Path $pluginsMetaCandidate) {
+      Copy-Item -Force $pluginsMetaCandidate (Join-Path $env:WORKSPACE "Plugins.meta")
       Write-Host "[CI] Copied Plugins.meta -> WORKSPACE"
     }
+    else {
+      $pluginsMeta = Get-ChildItem -Path $tmpDir -File -Recurse -Filter "Plugins.meta" -ErrorAction SilentlyContinue |
+                     Select-Object -First 1
+      if ($pluginsMeta) {
+        Copy-Item -Force $pluginsMeta.FullName (Join-Path $env:WORKSPACE "Plugins.meta")
+        Write-Host "[CI] Copied Plugins.meta (found via recurse) -> WORKSPACE"
+      }
+    }
   }
-  elseif (Test-Path $assetsInZip) {
-    $dstAssets = Join-Path $env:WORKSPACE "Assets"
-    New-Item -ItemType Directory -Force -Path $dstAssets | Out-Null
+  elseif ($assetsDir) {
+    Write-Host "[CI] Found Assets folder at: $($assetsDir.FullName)"
 
-    Write-Host "[CI] Detected Assets/ in zip. Merging -> $dstAssets"
-    robocopy $assetsInZip $dstAssets /E /NFL /NDL /NJH /NJS | Out-Null
+    $dstAssets = Join-Path $env:WORKSPACE "Assets"
+    Invoke-RobocopySafe -Source $assetsDir.FullName -Dest $dstAssets
   }
   else {
-    Write-Host "[CI] No Plugins/ or Assets/ found. Merging zip root -> WORKSPACE"
-    robocopy $tmpDir $env:WORKSPACE /E /NFL /NDL /NJH /NJS | Out-Null
+    Write-Host "[CI] No Plugins/Assets folder found. Merging zip root -> WORKSPACE"
+    Invoke-RobocopySafe -Source $tmpDir -Dest $env:WORKSPACE
+  }
+
+  $demigiant1 = Join-Path $env:WORKSPACE "Plugins\Demigiant"
+  $demigiant2 = Join-Path $env:WORKSPACE "Assets\Demigiant"
+  if (-not (Test-Path $demigiant1) -and -not (Test-Path $demigiant2)) {
+    Write-Host "[CI] WARNING: Demigiant folder not detected at expected paths."
+    Write-Host "[CI]          - $demigiant1"
+    Write-Host "[CI]          - $demigiant2"
+    Write-Host "[CI]          If build fails due to DOTween, check zip structure."
   }
 
   Write-Host "[CI] DOTween Pro injected successfully"
@@ -65,3 +103,4 @@ finally {
 }
 
 Write-Host "[CI] Inject stage finished successfully (no Unity build here)."
+exit 0
