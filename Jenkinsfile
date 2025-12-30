@@ -64,7 +64,7 @@ node {
     powershell '''
       $ErrorActionPreference = "Stop"
 
-      $unityExe = "C:\\Program Files\\Unity\\Hub\\Editor\\2022.3.62f2\\EditorUnity.exe"
+      $unityExe = "C:\\Program Files\\Unity\\Hub\\Editor\\2022.3.62f2\\Editor\\Unity.exe"
 
       if (!(Test-Path $unityExe)) {
         Write-Error "[CI] Unity.exe not found: $unityExe"
