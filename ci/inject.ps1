@@ -1,39 +1,34 @@
 $ErrorActionPreference = "Stop"
 
-Copy-Item "$env:GS_JSON" "Assets\google-services.json" -Force
-Write-Host "[CI] google-services.json injected"
+$unityExe = "C:\Program Files\Unity\Hub\Editor\2022.3.62f2\Editor\Unity.exe"
 
-Write-Host "[CI] Injecting DOTween Pro..."
-$zipPath = "$env:DOTWEEN_ZIP"
-$tempRoot = Join-Path $env:WORKSPACE "_temp_dotween"
+$buildDir = Join-Path $env:WORKSPACE "Build\Android"
+$buildRoot = Join-Path $env:WORKSPACE "Build"
+New-Item -ItemType Directory -Force -Path $buildRoot | Out-Null
+New-Item -ItemType Directory -Force -Path $buildDir  | Out-Null
 
-if (Test-Path $tempRoot) { Remove-Item $tempRoot -Recurse -Force }
-New-Item -ItemType Directory -Force -Path $tempRoot | Out-Null
+Write-Host "[CI] WORKSPACE = $env:WORKSPACE"
+Write-Host "[CI] buildDir  = $buildDir"
 
-Expand-Archive -Path $zipPath -DestinationPath $tempRoot -Force
+$cmdArgs = @(
+  "`"$unityExe`"",
+  "-batchmode", "-nographics", "-quit",
+  "-projectPath", "`"$env:WORKSPACE`"",
+  "-executeMethod", "BuildScript.BuildAndroidApk",
+  "-logFile", "-",
+  "-stackTraceLogType", "Full"
+) -join " "
 
-$demigiantDir = Get-ChildItem -Path $tempRoot -Directory -Recurse -Force |
-                Where-Object { $_.Name -eq "Demigiant" } |
-                Select-Object -First 1
-if ($null -eq $demigiantDir) { throw "Demigiant folder not found" }
+Write-Host "[CI] Running: $cmdArgs"
 
-$demigiantMetaPath = Join-Path $demigiantDir.Parent.FullName "Demigiant.meta"
-if (!(Test-Path $demigiantMetaPath)) {
-  $meta = Get-ChildItem -Path $tempRoot -File -Recurse -Force |
-          Where-Object { $_.Name -eq "Demigiant.meta" } |
-          Select-Object -First 1
-  if ($null -eq $meta) { throw "Demigiant.meta not found" }
-  $demigiantMetaPath = $meta.FullName
+cmd /c $cmdArgs
+$exitCode = $LASTEXITCODE
+Write-Host "[CI] Unity process exit code: $exitCode"
+
+if ($exitCode -ne 0) {
+  throw "Unity failed (exit=$exitCode). Check console log above for details."
 }
 
-$destPluginsDir = "Assets\Plugins"
-$destDemigiantDir = "Assets\Plugins\Demigiant"
-$destDemigiantMeta = "Assets\Plugins\Demigiant.meta"
-
-if (!(Test-Path $destPluginsDir)) { New-Item -ItemType Directory -Force -Path $destPluginsDir | Out-Null }
-if (Test-Path $destDemigiantDir) { Remove-Item $destDemigiantDir -Recurse -Force }
-
-Copy-Item -Recurse -Force $demigiantDir.FullName $destDemigiantDir
-Copy-Item -Force $demigiantMetaPath $destDemigiantMeta
-
-Write-Host "[CI] DOTween Pro injected successfully"
+$apk = Get-ChildItem -Path $buildDir -Filter *.apk -ErrorAction SilentlyContinue | Select-Object -First 1
+if ($null -eq $apk) { throw "Unity returned 0 but apk missing: $buildDir" }
+Write-Host "[CI] APK: $($apk.FullName)"
