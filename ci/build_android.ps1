@@ -18,6 +18,11 @@ $args = @(
   "-logFile", $logPath
 )
 
+Write-Host "[CI] WORKSPACE = $env:WORKSPACE"
+Write-Host "[CI] logPath   = $logPath"
+Write-Host "[CI] buildDir  = $buildDir"
+Write-Host "[CI] buildRoot exists? " (Test-Path (Join-Path $env:WORKSPACE "Build"))
+
 $proc = Start-Process -FilePath $unityExe -ArgumentList $args -NoNewWindow -Wait -PassThru
 $exitCode = $proc.ExitCode
 Write-Host "[CI] Unity process exit code: $exitCode"
