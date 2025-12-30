@@ -1,15 +1,22 @@
-Write-Host "[CI] build_android.ps1 path: $PSCommandPath"
-Write-Host "[CI] build_android.ps1 sha1: $((Get-FileHash $PSCommandPath -Algorithm SHA1).Hash)"
-
 $ErrorActionPreference = "Stop"
 
 $unityExe = "C:\Program Files\Unity\Hub\Editor\2022.3.62f2\Editor\Unity.exe"
-$logPath  = Join-Path $env:WORKSPACE "Build\unity_build.log"
-$buildDir = Join-Path $env:WORKSPACE "Build\Android"
-
 $buildRoot = Join-Path $env:WORKSPACE "Build"
+$logPath  = Join-Path $buildRoot "unity_build.log"
+$buildDir = Join-Path $buildRoot "Android"
+
 New-Item -ItemType Directory -Force -Path $buildRoot | Out-Null
-New-Item -ItemType Directory -Force -Path $buildDir | Out-Null
+New-Item -ItemType Directory -Force -Path $buildDir  | Out-Null
+
+$env:CI_KEYSTORE_PATH = $env:ANDROID_KEYSTORE
+$env:CI_KEYSTORE_PASS = $env:ANDROID_KEYSTORE_PASS
+$env:CI_KEYALIAS_NAME = $env:ANDROID_KEYALIAS_NAME
+$env:CI_KEYALIAS_PASS = $env:ANDROID_KEYALIAS_PASS
+
+Write-Host "[CI] CI_KEYSTORE_PATH = $env:CI_KEYSTORE_PATH"
+Write-Host "[CI] CI_KEYALIAS_NAME = $env:CI_KEYALIAS_NAME"
+Write-Host "[CI] logPath   = $logPath"
+Write-Host "[CI] buildDir  = $buildDir"
 
 if (Test-Path $logPath) { Remove-Item $logPath -Force }
 
@@ -18,16 +25,12 @@ $args = @(
   "-projectPath", $env:WORKSPACE,
   "-executeMethod", "BuildScript.BuildAndroidApk",
   "-workspace", $env:WORKSPACE,
-  "-logFile", "-"
+  "-logFile", $logPath,
+  "-stackTraceLogType", "Full"
 )
 
-Write-Host "[CI] WORKSPACE = $env:WORKSPACE"
-Write-Host "[CI] logPath   = $logPath"
-Write-Host "[CI] buildDir  = $buildDir"
-Write-Host "[CI] buildRoot exists? " (Test-Path (Join-Path $env:WORKSPACE "Build"))
-
-$unityOutput = & $unityExe @args 2>&1 | Tee-Object -Variable unityLines
-$exitCode = $LASTEXITCODE
+$proc = Start-Process -FilePath $unityExe -ArgumentList $args -NoNewWindow -Wait -PassThru
+$exitCode = $proc.ExitCode
 Write-Host "[CI] Unity process exit code: $exitCode"
 
 $logText = ""
@@ -41,7 +44,7 @@ $hasApk = $null -ne $apk
 
 if ($hasBuildException) { throw "BuildScript reported exception" }
 if (($exitCode -ne 0) -and -not ($hasSuccessMarker -and $hasApk)) {
-  throw "Unity failed (exit=$exitCode). No success marker or apk missing."
+  throw "Unity failed (exit=$exitCode). Check $logPath"
 }
 
 Write-Host "[CI] Unity build considered SUCCESS."
