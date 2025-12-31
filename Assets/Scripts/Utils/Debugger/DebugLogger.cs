@@ -2,29 +2,32 @@
 
 public static class DebugLogger
 {
-    public static void PrintLog<T>(this T type, string log, LogType logType = LogType.Log, Color? color = null)
+    public static void PrintLog<T>(
+        this T type,
+        string log,
+        LogCategory category = LogCategory.None,
+        LogType logType = LogType.Log
+        )
     {
         if (!DebugConfig.Current.EnableLog) return;
 
-        // 지정된 색이 없으면 기본은 white
-        var c = color ?? Color.white;
-        string hex = ColorUtility.ToHtmlStringRGB(c);
-
-        string prefix = $"[<color=#{hex}>{type}</color>]:";
+        Color color = DebugConfig.Current.GetColor(category);
+        string hex = ColorUtility.ToHtmlStringRGB(color);
+        string prefix = $"[<color=#{hex}>{category}</color>]";
 
         switch (logType)
         {
             case LogType.Error:
-                Debug.LogError($"{prefix} {log}");
+                Debug.LogError($"{prefix} [{type}]: {log}");
                 break;
             case LogType.Warning:
-                Debug.LogWarning($"{prefix} {log}");
+                Debug.LogWarning($"{prefix} [{type}]: {log}");
                 break;
             case LogType.Log:
-                Debug.Log($"{prefix} {log}");
+                Debug.Log($"{prefix} [{type}]: {log}");
                 break;
             default:
-                Debug.Log($"{prefix} {log}");
+                Debug.Log($"{prefix} [{type}]: {log}");
                 break;
         }
     }

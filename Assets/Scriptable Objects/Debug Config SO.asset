@@ -12,3 +12,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dfcd729d859796e45b7d887def60f29d, type: 3}
   m_Name: Debug Config SO
   m_EditorClassIdentifier: 
+  <EnableLog>k__BackingField: 1
+  categoryColors:
+  - LogCategory: 0
+    Color: {r: 1, g: 1, b: 1, a: 0}
+  - LogCategory: 1
+    Color: {r: 1, g: 0.7686275, b: 0, a: 1}
+  - LogCategory: 2
+    Color: {r: 0.18823531, g: 0.42352945, b: 0.654902, a: 0}
+  - LogCategory: 3
+    Color: {r: 0.09549664, g: 0.6981132, b: 0.18320145, a: 1}
+  - LogCategory: 4
+    Color: {r: 0.4339623, g: 0.4339623, b: 0.4339623, a: 1}
+  - LogCategory: 5
+    Color: {r: 0.30891773, g: 0.735849, b: 0.66753995, a: 1}
