@@ -35,15 +35,14 @@ public class Bootstrapper : MonoBehaviour
     {
         _bootstrapUIPresenter.Init();
 
-        await InitFirebaseStepAsync(ct);                                                        this.PrintLog("Firebase 초기화 완료", CurrentCategory, LogType.Log);
-        var user = await FirebaseLogInStepAsync(ct);                                            this.PrintLog($"Firebase 로그인 완료: {user.UserId}", CurrentCategory, LogType.Log);
+        await InitFirebaseStepAsync(ct); this.PrintLog("Firebase 초기화 완료", CurrentCategory, LogType.Log);
+        var user = await FirebaseLogInStepAsync(ct); this.PrintLog($"Firebase 로그인 완료: {user.UserId}", CurrentCategory, LogType.Log);
         // await 프로필 로드
-        await WaitForDownloadClickStepAsync(ct);                                                this.PrintLog("다운로드 시작", CurrentCategory, LogType.Log);
-        await DownloadAssetStepAsync(ct);                                                       this.PrintLog("다운로드 완료", CurrentCategory, LogType.Log);
+        await DownloadAssetStepAsync(ct); this.PrintLog("다운로드 완료", CurrentCategory, LogType.Log);
 
         _testImage.SetActive(true); // 테스트용
 
-        await EnsureNicknameStepAsync(FirebaseManager.Instance.Auth.CurrentUser.UserId, ct);    this.PrintLog("닉네임 설정 완료", CurrentCategory, LogType.Log);
+        await EnsureNicknameStepAsync(FirebaseManager.Instance.Auth.CurrentUser.UserId, ct); this.PrintLog("닉네임 설정 완료", CurrentCategory, LogType.Log);
 
         // await Pun2
 
@@ -64,16 +63,16 @@ public class Bootstrapper : MonoBehaviour
         return user;
     }
 
-    private async UniTask WaitForDownloadClickStepAsync(CancellationToken ct)
-    {
-        await _bootstrapUIPresenter.WaitForDownloadClickAsync(ct);
-    }
-
     private async UniTask DownloadAssetStepAsync(CancellationToken ct)
     {
         string catalogUrl = await _addressablesRemoteService.GetCatalogUrlAsync(ct);
         await _addressablesRemoteService.InitializeAsync(ct);
         await _addressablesRemoteService.LoadRemoteCatalogAsync(catalogUrl, ct);
+
+        bool isDownloadNeeded = await _addressablesRemoteService.GetNeedDownloadAsync(ct);
+        if (!isDownloadNeeded) return;
+
+        await _bootstrapUIPresenter.WaitForDownloadClickAsync(ct);
         await _addressablesRemoteService.DownloadAllAsync(ct);
     }
 
@@ -101,6 +100,7 @@ public class Bootstrapper : MonoBehaviour
             // 설정 성공할 때만 return
             if (result == NicknameSetErrorCode.Success)
             {
+                await _nicknameSetter.SetUsersTreeAlso(nickname, ct);
                 _bootstrapUIPresenter.HideNicknameUI();
                 return;
             }
