@@ -9,6 +9,8 @@ public class Bootstrapper : MonoBehaviour
 
     [Header("모듈")]
     [SerializeField] private FirebaseLogInService _firebaseLogInService;
+    [SerializeField] private AddressablesRemoteService _addressablesRemoteService;
+    [SerializeField] private BootstrapUIPresenter _bootstrapUIPresenter;
 
     [Header("재시도 정책")]
     [SerializeField] private int _maxRetry = 3;
@@ -16,6 +18,8 @@ public class Bootstrapper : MonoBehaviour
     [SerializeField] private int _firebaseLogInStepTimeOutMs = 10000;
     [SerializeField] private int _retryDelayMs = 1000;
 
+    [Header("테스트용")]
+    [SerializeField] private GameObject _testImage;
 
     private void Start()
     {
@@ -23,18 +27,31 @@ public class Bootstrapper : MonoBehaviour
     }
 
 
-
     private async UniTask BootstrapFlowAsync(CancellationToken ct)
     {
+        _bootstrapUIPresenter.Init();
+
         await RunStepWithRetry("Firebase 초기화", () => FirebaseManager.Instance.Initialize(ct), _firebaseInitStepTimeOutMs, ct);
         this.PrintLog("Firebase 초기화 완료", CurrentCategory, LogType.Log);
 
         var user = await RunStepWithRetry("Firebase 로그인", () => _firebaseLogInService.SignInAsync(ct), _firebaseLogInStepTimeOutMs, ct);
         this.PrintLog($"Firebase 로그인 완료: {user.UserId}", CurrentCategory, LogType.Log);
         // await 프로필 로드
+
+        this.PrintLog("다운로드 버튼 대기 중", CurrentCategory, LogType.Log);
+        await _bootstrapUIPresenter.WaitForDownloadClickAsync();
+
+        this.PrintLog("다운로드 시작", CurrentCategory, LogType.Log);
+        string catalogUrl = await _addressablesRemoteService.GetCatalogUrlAsync(ct);
+        await _addressablesRemoteService.InitializeAsync(ct);
+        await _addressablesRemoteService.LoadRemoteCatalogAsync(catalogUrl, ct);
+        await _addressablesRemoteService.DownloadAllAsync(ct);
+
+        _testImage.SetActive(true);
         // await Pun2
     }
 
+    #region Private Methods
 
     private async UniTask RunStepWithRetry(string stepName, Func<UniTask> step, int stepTimeoutMs, CancellationToken ct)
     {
@@ -88,4 +105,6 @@ public class Bootstrapper : MonoBehaviour
         // 최종 실패
         throw new Exception($"{stepName} 실패");
     }
+
+    #endregion
 }
