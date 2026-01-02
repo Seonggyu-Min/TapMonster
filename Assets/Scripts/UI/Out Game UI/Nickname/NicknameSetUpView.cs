@@ -13,8 +13,6 @@ public class NicknameSetUpView : MonoBehaviour
     [SerializeField] private GameObject _errorObj;
     [SerializeField] private TMP_Text _errorText;
 
-    public event Action OnSubmitClicked;
-
     private LogCategory _currentCategory = LogCategory.UI;
 
     public string NicknameText => _inputField.text;

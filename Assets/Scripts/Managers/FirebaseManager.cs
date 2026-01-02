@@ -13,10 +13,6 @@ public class FirebaseManager : Singleton<FirebaseManager>
     private FirebaseDatabase _database;
 
     public bool IsReady => _auth != null && _database != null;
-
-    public event Action OnFirebaseReady;
-    public event Action OnFirebaseLoadFailed;
-
     public FirebaseAuth Auth => _auth ??= FirebaseAuth.DefaultInstance;
     public FirebaseDatabase Database => _database ??= FirebaseDatabase.DefaultInstance;
 
