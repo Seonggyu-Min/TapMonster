@@ -7,6 +7,8 @@ public static class DBRoutes
     public static string AddressablesCatalogJsonUrl => DatabaseKeys.AddressablesCatalogJsonURL;
 
     // -- User Data --
-    public static string Users(string uid) => DBPathMaker.Join(DatabaseKeys.Users, uid);
+    public static string Users => DBPathMaker.Join(DatabaseKeys.Users);
+    public static string UsersUid(string uid) => DBPathMaker.Join(DatabaseKeys.Users, uid);
     public static string Nickname(string uid) => DBPathMaker.Join(DatabaseKeys.Users, uid, DatabaseKeys.Nickname);
+    public static string NicknameStorage(string nickname) => DBPathMaker.Join(DatabaseKeys.NicknameStorage, nickname);
 }

@@ -9,7 +9,7 @@ public static class DatabaseKeys
     // -- User Data Keys --
     public const string Users = "Users";
     public const string Nickname = "Nickname";
-    public const string Email = "Email";
+    public const string NicknameStorage = "NicknameStorage";    // 역인덱스 조회용
 
     // -- Friend Data Keys --
 
