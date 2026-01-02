@@ -15,9 +15,9 @@ MonoBehaviour:
   m_DefaultGroup: 70b581a1220635a4397f99e784dc1081
   m_currentHash:
     serializedVersion: 2
-    Hash: 00000000000000000000000000000000
+    Hash: c8bdebb3808fe306f4ca9a0348fea8f0
   m_OptimizeCatalogSize: 0
-  m_BuildRemoteCatalog: 0
+  m_BuildRemoteCatalog: 1
   m_BundleLocalCatalog: 0
   m_CatalogRequestsTimeout: 0
   m_DisableCatalogUpdateOnStart: 0
@@ -35,16 +35,17 @@ MonoBehaviour:
   m_CheckForContentUpdateRestrictionsOption: 0
   m_MonoScriptBundleCustomNaming: 
   m_RemoteCatalogBuildPath:
-    m_Id: 
+    m_Id: 1cd657d4f4c46644b822c2d2b41efda0
   m_RemoteCatalogLoadPath:
-    m_Id: 
-  m_ContentStateBuildPathProfileVariableName: 
+    m_Id: fe412865607c3374c912e31c5bb357ea
+  m_ContentStateBuildPathProfileVariableName: <default settings path>
   m_CustomContentStateBuildPath: 
   m_ContentStateBuildPath: 
   m_BuildAddressablesWithPlayerBuild: 0
   m_overridePlayerVersion: '[UnityEditor.PlayerSettings.bundleVersion]'
   m_GroupAssets:
   - {fileID: 11400000, guid: d20deeba9d05aed4da9b7b5b16d6c1bc, type: 2}
+  - {fileID: 11400000, guid: ffe5484d8100f294f816da785692dc1e, type: 2}
   - {fileID: 11400000, guid: 3520cd4ffe1dae24ea6dedc5a9bd6263, type: 2}
   m_BuildSettings:
     m_CompileScriptsInVirtualMode: 0
@@ -67,6 +68,20 @@ MonoBehaviour:
         m_Value: '{UnityEngine.AddressableAssets.Addressables.RuntimePath}/[BuildTarget]'
       - m_Id: fe412865607c3374c912e31c5bb357ea
         m_Value: http://[PrivateIpAddress]:[HostingServicePort]
+    - m_InheritedParent: 
+      m_Id: 83f927613103aa34ea296a3c7401d9d5
+      m_ProfileName: Remote
+      m_Values:
+      - m_Id: 1cd657d4f4c46644b822c2d2b41efda0
+        m_Value: ServerData/[BuildTarget]
+      - m_Id: 5193d3c0e9c1cfc43bb82f72675f6238
+        m_Value: '[UnityEngine.AddressableAssets.Addressables.BuildPath]/[BuildTarget]'
+      - m_Id: 7e771094ed5455d48b0ce0ead0e669b5
+        m_Value: '[UnityEditor.EditorUserBuildSettings.activeBuildTarget]'
+      - m_Id: a00bea1806dca2f45be651ecaba0dcd8
+        m_Value: '{UnityEngine.AddressableAssets.Addressables.RuntimePath}/[BuildTarget]'
+      - m_Id: fe412865607c3374c912e31c5bb357ea
+        m_Value: https://storage.googleapis.com/tap_monster_bucket/app_1.0.0/content_001/Android
     m_ProfileEntryNames:
     - m_Id: 1cd657d4f4c46644b822c2d2b41efda0
       m_Name: Remote.BuildPath
@@ -87,6 +102,11 @@ MonoBehaviour:
   m_LabelTable:
     m_LabelNames:
     - default
+    - Audio
+    - UI
+    - GamePlay
+    - Fonts
+    - Strings
   m_SchemaTemplates: []
   m_GroupTemplateObjects:
   - {fileID: 11400000, guid: 666100666b922fb448502daad9f62c79, type: 2}
@@ -100,7 +120,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 4ced8a74b94c6494e9a3e244d59aaff7, type: 2}
   - {fileID: 11400000, guid: 9d83881d5ff421644a08198934e854b3, type: 2}
   - {fileID: 11400000, guid: eb585addf7b429b46ba5a49bf100e3e8, type: 2}
-  m_ActiveProfileId: 292c895436f84cc4d9b2db9e163b43e2
+  m_ActiveProfileId: 83f927613103aa34ea296a3c7401d9d5
   m_HostingServicesManager:
     m_HostingServiceInfos: []
     m_Settings: {fileID: 11400000}
