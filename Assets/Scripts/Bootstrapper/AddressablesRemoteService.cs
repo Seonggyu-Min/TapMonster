@@ -1,14 +1,12 @@
 ﻿using Cysharp.Threading.Tasks;
 using Firebase.Database;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Threading;
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.AddressableAssets.ResourceLocators;
 using UnityEngine.ResourceManagement.AsyncOperations;
+
 
 public class AddressablesRemoteService : MonoBehaviour
 {
@@ -58,7 +56,6 @@ public class AddressablesRemoteService : MonoBehaviour
         }
     }
 
-
     public async UniTask LoadRemoteCatalogAsync(string catalogJsonUrl, CancellationToken ct)
     {
         if (!_isInitialized)
@@ -87,7 +84,48 @@ public class AddressablesRemoteService : MonoBehaviour
         _loadedCatalogUrl = catalogJsonUrl;
         this.PrintLog($"Remote catalog 로드 완료: {catalogJsonUrl}", _currentCategory, LogType.Log);
     }
-    
+
+    public async UniTask<bool> GetNeedDownloadAsync(CancellationToken ct)
+    {
+        if (!_isInitialized)
+        {
+            throw new InvalidOperationException("어드레서블을 먼저 초기화해야 합니다. InitializeAsync 메서드를 먼저 호출하세요.");
+        }
+
+        if (_labelSO == null || _labelSO.Labels == null || _labelSO.Labels.Count == 0)
+        {
+            this.PrintLog("라벨이 null이거나 비어있습니다.", _currentCategory, LogType.Warning);
+            return false;
+        }
+
+        // 카탈로그 업데이트 확인
+        var checkHandle = Addressables.CheckForCatalogUpdates(false);
+        var catalogs = await checkHandle.ToUniTask(cancellationToken: ct);
+        Addressables.Release(checkHandle);
+
+        if (catalogs != null && catalogs.Count > 0)
+        {
+            // 카탈로그 업데이트 적용
+            var updateHandle = Addressables.UpdateCatalogs(catalogs, false);
+            await updateHandle.ToUniTask(cancellationToken: ct);
+            Addressables.Release(updateHandle);
+        }
+
+        // 다운로드 크기 계산
+        long totalSize = 0;
+
+        foreach (string label in _labelSO.Labels)
+        {
+            var sizeHandle = Addressables.GetDownloadSizeAsync(label);
+            long size = await sizeHandle.ToUniTask(cancellationToken: ct);
+            Addressables.Release(sizeHandle);
+
+            totalSize += size;
+        }
+
+        return totalSize > 0;
+    }
+
     public async UniTask DownloadAllAsync(CancellationToken ct)
     {
         if (_labelSO == null || _labelSO.Labels == null || _labelSO.Labels.Count == 0)
