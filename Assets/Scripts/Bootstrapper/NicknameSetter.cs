@@ -1,5 +1,6 @@
 ﻿using Cysharp.Threading.Tasks;
 using Firebase.Database;
+using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
 
@@ -44,7 +45,7 @@ public class NicknameSetter : MonoBehaviour
                     return TransactionResult.Abort();
                 }
 
-                mutable.Value = nickname;
+                mutable.Value = FirebaseManager.Instance.Auth.CurrentUser.UserId;
                 return TransactionResult.Success(mutable);
             },
             ct: ct
@@ -57,5 +58,16 @@ public class NicknameSetter : MonoBehaviour
         }
 
         return NicknameSetErrorCode.Success;
+    }
+
+    public async UniTask SetUsersTreeAlso(string nickname, CancellationToken ct)
+    {
+        Dictionary<string, object> updates = new()
+        {
+            {DBRoutes.Nickname(FirebaseManager.Instance.Auth.CurrentUser.UserId), nickname },
+            // 생성일?
+        };
+
+        await RTDBService.Instance.UpdateUniTaskAsync(updates, ct);
     }
 }
