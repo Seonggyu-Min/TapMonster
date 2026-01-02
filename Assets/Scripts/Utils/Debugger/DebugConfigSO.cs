@@ -9,7 +9,8 @@ public enum LogCategory
     PUN,
     GameLogic,
     UI,
-    Bootstrap
+    Bootstrap,
+    Addressables
 }
 
 

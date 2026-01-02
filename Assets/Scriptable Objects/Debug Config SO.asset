@@ -26,3 +26,5 @@ MonoBehaviour:
     Color: {r: 0.4339623, g: 0.4339623, b: 0.4339623, a: 1}
   - LogCategory: 5
     Color: {r: 0.30891773, g: 0.735849, b: 0.66753995, a: 1}
+  - LogCategory: 5
+    Color: {r: 0.13207549, g: 0.13207549, b: 0.13207549, a: 1}
