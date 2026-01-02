@@ -1,7 +1,9 @@
 ﻿using Cysharp.Threading.Tasks;
+using Firebase.Auth;
 using System;
 using System.Threading;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class Bootstrapper : MonoBehaviour
 {
@@ -11,6 +13,7 @@ public class Bootstrapper : MonoBehaviour
     [SerializeField] private FirebaseLogInService _firebaseLogInService;
     [SerializeField] private AddressablesRemoteService _addressablesRemoteService;
     [SerializeField] private BootstrapUIPresenter _bootstrapUIPresenter;
+    [SerializeField] private NicknameSetter _nicknameSetter;
 
     [Header("재시도 정책")]
     [SerializeField] private int _maxRetry = 3;
@@ -23,7 +26,8 @@ public class Bootstrapper : MonoBehaviour
 
     private void Start()
     {
-        BootstrapFlowAsync(this.GetCancellationTokenOnDestroy()).Forget();
+        BootstrapFlowAsync(this.GetCancellationTokenOnDestroy())
+            .Forget(e => this.PrintLog($"부트스트랩 예외 발생: {e}", CurrentCategory, LogType.Error)); ;
     }
 
 
@@ -31,27 +35,84 @@ public class Bootstrapper : MonoBehaviour
     {
         _bootstrapUIPresenter.Init();
 
-        await RunStepWithRetry("Firebase 초기화", () => FirebaseManager.Instance.Initialize(ct), _firebaseInitStepTimeOutMs, ct);
-        this.PrintLog("Firebase 초기화 완료", CurrentCategory, LogType.Log);
-
-        var user = await RunStepWithRetry("Firebase 로그인", () => _firebaseLogInService.SignInAsync(ct), _firebaseLogInStepTimeOutMs, ct);
-        this.PrintLog($"Firebase 로그인 완료: {user.UserId}", CurrentCategory, LogType.Log);
+        await InitFirebaseStepAsync(ct);                                                        this.PrintLog("Firebase 초기화 완료", CurrentCategory, LogType.Log);
+        var user = await FirebaseLogInStepAsync(ct);                                            this.PrintLog($"Firebase 로그인 완료: {user.UserId}", CurrentCategory, LogType.Log);
         // await 프로필 로드
+        await WaitForDownloadClickStepAsync(ct);                                                this.PrintLog("다운로드 시작", CurrentCategory, LogType.Log);
+        await DownloadAssetStepAsync(ct);                                                       this.PrintLog("다운로드 완료", CurrentCategory, LogType.Log);
 
-        this.PrintLog("다운로드 버튼 대기 중", CurrentCategory, LogType.Log);
-        await _bootstrapUIPresenter.WaitForDownloadClickAsync();
+        _testImage.SetActive(true); // 테스트용
 
-        this.PrintLog("다운로드 시작", CurrentCategory, LogType.Log);
+        await EnsureNicknameStepAsync(FirebaseManager.Instance.Auth.CurrentUser.UserId, ct);    this.PrintLog("닉네임 설정 완료", CurrentCategory, LogType.Log);
+
+        // await Pun2
+
+        SceneManager.LoadScene(1);
+    }
+
+    #region Private Step Methods
+
+
+    private async UniTask InitFirebaseStepAsync(CancellationToken ct)
+    {
+        await RunStepWithRetry("Firebase 초기화", () => FirebaseManager.Instance.Initialize(ct), _firebaseInitStepTimeOutMs, ct);
+    }
+
+    private async UniTask<FirebaseUser> FirebaseLogInStepAsync(CancellationToken ct)
+    {
+        var user = await RunStepWithRetry("Firebase 로그인", () => _firebaseLogInService.SignInAsync(ct), _firebaseLogInStepTimeOutMs, ct);
+        return user;
+    }
+
+    private async UniTask WaitForDownloadClickStepAsync(CancellationToken ct)
+    {
+        await _bootstrapUIPresenter.WaitForDownloadClickAsync(ct);
+    }
+
+    private async UniTask DownloadAssetStepAsync(CancellationToken ct)
+    {
         string catalogUrl = await _addressablesRemoteService.GetCatalogUrlAsync(ct);
         await _addressablesRemoteService.InitializeAsync(ct);
         await _addressablesRemoteService.LoadRemoteCatalogAsync(catalogUrl, ct);
         await _addressablesRemoteService.DownloadAllAsync(ct);
-
-        _testImage.SetActive(true);
-        // await Pun2
     }
 
-    #region Private Methods
+    private async UniTask EnsureNicknameStepAsync(string uid, CancellationToken ct)
+    {
+        bool isSet = await _nicknameSetter.IsSetNickname(uid, ct);
+        if (isSet) return;
+
+        _bootstrapUIPresenter.ShowNicknameUI();
+
+        while (true)
+        {
+            _bootstrapUIPresenter.HideNicknameError();
+            string nickname = await _bootstrapUIPresenter.WaitNicknameSubmitAsync(ct);
+
+            // TODO: 길이, 금칙어
+            if (string.IsNullOrWhiteSpace(nickname))
+            {
+                _bootstrapUIPresenter.ShowNicknameError(NicknameSetErrorCode.Empty);
+                continue;
+            }
+
+            NicknameSetErrorCode result = await _nicknameSetter.TrySetNickname(nickname, ct);
+
+            // 설정 성공할 때만 return
+            if (result == NicknameSetErrorCode.Success)
+            {
+                _bootstrapUIPresenter.HideNicknameUI();
+                return;
+            }
+
+            _bootstrapUIPresenter.ShowNicknameError(result);
+        }
+    }
+
+    #endregion
+
+
+    #region Private Helper Methods
 
     private async UniTask RunStepWithRetry(string stepName, Func<UniTask> step, int stepTimeoutMs, CancellationToken ct)
     {
@@ -61,7 +122,7 @@ public class Bootstrapper : MonoBehaviour
             {
                 this.PrintLog($"{stepName} 시도, {attempt} / {_maxRetry}", CurrentCategory, LogType.Log);
 
-                await step().Timeout(TimeSpan.FromMilliseconds(stepTimeoutMs));
+                await step().AttachExternalCancellation(ct).Timeout(TimeSpan.FromMilliseconds(stepTimeoutMs));
                 return;
             }
             catch (TimeoutException) when (attempt < _maxRetry)
@@ -88,7 +149,7 @@ public class Bootstrapper : MonoBehaviour
             {
                 this.PrintLog($"{stepName} 시도, {attempt} / {_maxRetry}", CurrentCategory, LogType.Log);
 
-                return await step().Timeout(TimeSpan.FromMilliseconds(stepTimeoutMs));
+                return await step().AttachExternalCancellation(ct).Timeout(TimeSpan.FromMilliseconds(stepTimeoutMs));
             }
             catch (TimeoutException) when (attempt < _maxRetry)
             {
