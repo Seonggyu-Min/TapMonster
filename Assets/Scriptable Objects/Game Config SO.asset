@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 334330aeff0dffc4db75c1f362d9f210, type: 3}
+  m_Name: Game Config SO
+  m_EditorClassIdentifier: 
+  _stageConfigSO: {fileID: 11400000, guid: de447674738b2c44da47a85616f53c78, type: 2}
+  _rewardConfigSO: {fileID: 11400000, guid: 126cd77784557864385016416905ec8c, type: 2}
+  _combatConfigSO: {fileID: 11400000, guid: 2e7483c5c9e330d41b0172089e97191b, type: 2}
+  _gachaConfigSO: {fileID: 11400000, guid: 6847657c3371ecd4fa831d76901d520d, type: 2}
