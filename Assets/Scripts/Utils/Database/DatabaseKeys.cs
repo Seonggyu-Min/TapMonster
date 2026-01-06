@@ -11,6 +11,24 @@ public static class DatabaseKeys
     public const string Nickname = "Nickname";
     public const string NicknameStorage = "NicknameStorage";    // 역인덱스 조회용
 
-    // -- Friend Data Keys --
+    // -- Save Data Keys --
+    public const string SaveData = "SaveData";
+    // - Stage
+    public const string Stage = "Stage";
+    public const string CurrentStage = "CurrentStage";
+    
+    // - Relic
+    public const string RelicLevels = "RelicLevels";
 
+    // - Upgrade
+    public const string UpgradeLevels = "UpgradeLevels";
+
+    // - Skill
+    public const string SkillLevels = "SkillLevels";
+
+    // - Wallet
+    public const string Wallet = "Wallet";
+    public const string CurrentGold = "CurrentGold";
+    public const string Mantissa = "Mantissa";
+    public const string Exponent = "Exponent";
 }
