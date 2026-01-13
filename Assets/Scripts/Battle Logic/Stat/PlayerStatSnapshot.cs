@@ -4,40 +4,25 @@
 /// </summary>
 public readonly struct PlayerStatSnapshot
 {
-    public readonly BigNumber ManualDamage;                             // 자동 공격 데미지
-    public readonly BigNumber AutoDamage;                               // 수동 공격 데미지
+    public readonly BigNumber ManualFinalDamage;
+    public readonly BigNumber AutoFinalDamage;
 
-    public readonly float AutoDamageInterval;                           // 자동 공격 데미지 주기 (일단 고정으로 쓸 것 같음)
+    public readonly float ManualCriticalChance;
+    public readonly float AutoCriticalChance;
 
-    public readonly float ManualCriticalChance;                         // 수동 공격 치명타 확률 (합연산만 가능)
-    public readonly float AutoCriticalChance;                           // 자동 공격 치명타 확률 (합연산만 가능)
-
-    public readonly float ManualAdditiveDamageMultiplier;               // 수동 공격 합연산
-    public readonly float AutoAdditiveDamageMultiplier;                 // 자동 공격 합연산
-
-    public readonly float ManualMultiplicativeDamageMultiplier;         // 수동 공격 곱연산
-    public readonly float AutoMultiplicativeDamageMultiplier;           // 자동 공격 곱연산
-
+    public readonly float AutoDamageInterval;
 
     public PlayerStatSnapshot(
-        BigNumber manualDamage,
-        BigNumber autoDamage,
-        float autoDamageInterval,
-        float manualCriticalChance,
-        float autoCriticalChance,
-        float manualAdditiveDamageMultiplier,
-        float autoAdditiveDamageMultiplier,
-        float manualMultiplicativeDamageMultiplier,
-        float autoMultiplicativeDamageMultiplier)
+        BigNumber manualFinal,
+        BigNumber autoFinal,
+        float manualCrit,
+        float autoCrit,
+        float autoInterval)
     {
-        ManualDamage = manualDamage;
-        AutoDamage = autoDamage;
-        AutoDamageInterval = autoDamageInterval;
-        ManualCriticalChance = manualCriticalChance;
-        AutoCriticalChance = autoCriticalChance;
-        ManualAdditiveDamageMultiplier = manualAdditiveDamageMultiplier;
-        AutoAdditiveDamageMultiplier = autoAdditiveDamageMultiplier;
-        ManualMultiplicativeDamageMultiplier = manualMultiplicativeDamageMultiplier;
-        AutoMultiplicativeDamageMultiplier = autoMultiplicativeDamageMultiplier;
+        ManualFinalDamage = manualFinal;
+        AutoFinalDamage = autoFinal;
+        ManualCriticalChance = manualCrit;
+        AutoCriticalChance = autoCrit;
+        AutoDamageInterval = autoInterval;
     }
 }
