@@ -12,3 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7479419d4f646ad4ea5b9c915077c32f, type: 3}
   m_Name: Gacha Config SO
   m_EditorClassIdentifier: 
+  _gachaCostGold:
+    Mantissa: 1
+    Exponent: 3
+  _relicPool:
+  - Id: 10001
+    Name: Test
+    Weight: 1
+    Icon: {fileID: 21300000, guid: ef54789e92f65414b885fff8c36ca056, type: 3}
+  - Id: 10002
+    Name: Test2
+    Weight: 1
+    Icon: {fileID: 21300000, guid: ef54789e92f65414b885fff8c36ca056, type: 3}
