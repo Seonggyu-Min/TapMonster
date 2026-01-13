@@ -16,3 +16,6 @@ MonoBehaviour:
   _rewardConfigSO: {fileID: 11400000, guid: 126cd77784557864385016416905ec8c, type: 2}
   _combatConfigSO: {fileID: 11400000, guid: 2e7483c5c9e330d41b0172089e97191b, type: 2}
   _gachaConfigSO: {fileID: 11400000, guid: 6847657c3371ecd4fa831d76901d520d, type: 2}
+  _relicConfigSO: {fileID: 11400000, guid: 0935bfc8d1d9aa440a5bb5d2da09cedb, type: 2}
+  _upgradeConfigSO: {fileID: 11400000, guid: d59819c744c5fb44db23c41ec0aec597, type: 2}
+  _skillConfigSO: {fileID: 11400000, guid: 895e7f916b6037443bb2bcd74902893f, type: 2}
