@@ -5,6 +5,13 @@
     Skill       // 스킬
 }
 
+public enum TargetType
+{
+    Normal,
+    Boss,
+}
+
+
 public struct DamageContext
 {
     public DamageSource DamageSource;
@@ -14,8 +21,10 @@ public struct DamageContext
     public bool CanCritical;
     public float CriticalChance;
 
-    public float AdditiveMultiplier;
-    public float MultiplicativeMultiplier;
+    public float AdditiveDamagePercent;
+    public float DamageMultiplier;
 
     public int SkillId;
+
+    public TargetType TargetType;
 }
