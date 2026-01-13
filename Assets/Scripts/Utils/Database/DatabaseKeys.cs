@@ -13,6 +13,8 @@ public static class DatabaseKeys
 
     // -- Save Data Keys --
     public const string SaveData = "SaveData";
+    public const string LastSavedAtUnixMs = "LastSavedAtUnixMs";
+
     // - Stage
     public const string Stage = "Stage";
     public const string CurrentStage = "CurrentStage";
@@ -28,7 +30,7 @@ public static class DatabaseKeys
 
     // - Wallet
     public const string Wallet = "Wallet";
-    public const string CurrentGold = "CurrentGold";
+    public const string Gold = "Gold";
     public const string Mantissa = "Mantissa";
     public const string Exponent = "Exponent";
 }

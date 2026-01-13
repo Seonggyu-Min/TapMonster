@@ -15,6 +15,7 @@ public static class DBRoutes
 
     // -- Save Data --
     public static string SaveData(string uid) => DBPathMaker.Join(DatabaseKeys.Users, uid, DatabaseKeys.SaveData);
+    public static string LastSavedAtUnixMs(string uid) => DBPathMaker.Join(DatabaseKeys.Users, uid, DatabaseKeys.SaveData, DatabaseKeys.LastSavedAtUnixMs);
 
     // - Stage
     public static string Stage(string uid) => DBPathMaker.Join(DatabaseKeys.Users, uid, DatabaseKeys.SaveData, DatabaseKeys.Stage);
@@ -34,7 +35,7 @@ public static class DBRoutes
     
     // - Wallet
     public static string Wallet(string uid) => DBPathMaker.Join(DatabaseKeys.Users, uid, DatabaseKeys.SaveData, DatabaseKeys.Wallet);
-    public static string CurrentGold(string uid) => DBPathMaker.Join(DatabaseKeys.Users, uid, DatabaseKeys.SaveData, DatabaseKeys.Wallet, DatabaseKeys.CurrentGold);
-    public static string CurrentGoldMantissa(string uid) => DBPathMaker.Join(DatabaseKeys.Users, uid, DatabaseKeys.SaveData, DatabaseKeys.Wallet, DatabaseKeys.CurrentGold, DatabaseKeys.Mantissa);
-    public static string CurrentGoldExponent(string uid) => DBPathMaker.Join(DatabaseKeys.Users, uid, DatabaseKeys.SaveData, DatabaseKeys.Wallet, DatabaseKeys.CurrentGold, DatabaseKeys.Exponent);
+    public static string Gold(string uid) => DBPathMaker.Join(DatabaseKeys.Users, uid, DatabaseKeys.SaveData, DatabaseKeys.Wallet, DatabaseKeys.Gold);
+    public static string GoldMantissa(string uid) => DBPathMaker.Join(DatabaseKeys.Users, uid, DatabaseKeys.SaveData, DatabaseKeys.Wallet, DatabaseKeys.Gold, DatabaseKeys.Mantissa);
+    public static string GoldExponent(string uid) => DBPathMaker.Join(DatabaseKeys.Users, uid, DatabaseKeys.SaveData, DatabaseKeys.Wallet, DatabaseKeys.Gold, DatabaseKeys.Exponent);
 }
