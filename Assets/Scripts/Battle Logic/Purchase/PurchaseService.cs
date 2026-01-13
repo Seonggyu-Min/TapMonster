@@ -1,0 +1,31 @@
+﻿public enum PurchaseResult
+{
+    Success,
+    NotEnoughCurrency,
+    InvalidCost,
+    Blocked,
+}
+
+public class PurchaseService
+{
+    private readonly WalletService _walletService;
+
+    public PurchaseService(WalletService walletService)
+    {
+        _walletService = walletService;
+    }
+
+    public bool CanPay(in Cost cost)
+    {
+        // TODO: 할인, 배수 등 정책 추가
+        return _walletService.CanAfford(cost.Currency, cost.Amount);
+    }
+
+    public PurchaseResult TryPay(in Cost cost)
+    {
+        if (cost.Amount.Mantissa <= 0) return PurchaseResult.InvalidCost;
+
+        var r = _walletService.TrySpend(cost.Currency, cost.Amount);
+        return r == SpendResult.Success ? PurchaseResult.Success : PurchaseResult.NotEnoughCurrency;
+    }
+}
