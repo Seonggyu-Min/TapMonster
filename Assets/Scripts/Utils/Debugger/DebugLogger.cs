@@ -10,6 +10,7 @@ public static class DebugLogger
         )
     {
         if (!DebugConfig.Current.EnableLog) return;
+        if (!DebugConfig.Current.IsCategoryEnabled(category)) return;
 
         Color color = DebugConfig.Current.GetColor(category);
         string hex = ColorUtility.ToHtmlStringRGB(color);
