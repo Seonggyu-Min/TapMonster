@@ -28,6 +28,11 @@ public static class DatabaseKeys
     // - Skill
     public const string SkillLevels = "SkillLevels";
 
+    // - Skill Slot
+    public const string SkillSlots = "SkillSlots";
+    public const string Equipped = "Equipped";
+    public const string Inventory = "Inventory";
+
     // - Wallet
     public const string Wallet = "Wallet";
     public const string Gold = "Gold";

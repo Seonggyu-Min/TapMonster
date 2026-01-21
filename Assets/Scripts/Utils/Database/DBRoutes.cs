@@ -32,7 +32,14 @@ public static class DBRoutes
     // - Skill
     public static string SkillLevels(string uid) => DBPathMaker.Join(DatabaseKeys.Users, uid, DatabaseKeys.SaveData, DatabaseKeys.SkillLevels);
     public static string SkillLevel(string uid, int id) => DBPathMaker.Join(DatabaseKeys.Users, uid, DatabaseKeys.SaveData, DatabaseKeys.SkillLevels, id.ToString());
-    
+
+    // - Skill Slot
+    public static string SkillSlots(string uid) => DBPathMaker.Join(DatabaseKeys.Users, uid, DatabaseKeys.SaveData, DatabaseKeys.SkillSlots);
+    public static string SkillSlotsEquipped(string uid) => DBPathMaker.Join(DatabaseKeys.Users, uid, DatabaseKeys.SaveData, DatabaseKeys.SkillSlots, DatabaseKeys.Equipped);
+    public static string SkillEquippedAt(string uid, int slotIndex) => DBPathMaker.Join(DatabaseKeys.Users, uid, DatabaseKeys.SaveData, DatabaseKeys.SkillSlots, DatabaseKeys.Equipped, slotIndex.ToString());
+    public static string SkillSlotsInventory(string uid) => DBPathMaker.Join(DatabaseKeys.Users, uid, DatabaseKeys.SaveData, DatabaseKeys.SkillSlots, DatabaseKeys.Inventory);
+    public static string SkillInventoryAt(string uid, int slotIndex) => DBPathMaker.Join(DatabaseKeys.Users, uid, DatabaseKeys.SaveData, DatabaseKeys.SkillSlots, DatabaseKeys.Inventory, slotIndex.ToString());
+
     // - Wallet
     public static string Wallet(string uid) => DBPathMaker.Join(DatabaseKeys.Users, uid, DatabaseKeys.SaveData, DatabaseKeys.Wallet);
     public static string Gold(string uid) => DBPathMaker.Join(DatabaseKeys.Users, uid, DatabaseKeys.SaveData, DatabaseKeys.Wallet, DatabaseKeys.Gold);
