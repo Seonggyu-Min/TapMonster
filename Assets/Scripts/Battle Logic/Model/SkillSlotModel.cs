@@ -9,6 +9,27 @@ public enum SkillSlotChangeKind
     Any
 }
 
+public enum SlotType
+{
+    None,
+    Equipped,
+    Inventory
+}
+
+public readonly struct SkillSlotChangeEvent
+{
+    public readonly SlotType SlotType;
+    public readonly int SlotIndex;
+    public readonly int SkillId;
+
+    public SkillSlotChangeEvent(SlotType slotType, int slotIndex, int skillId)
+    {
+        SlotType = slotType;
+        SlotIndex = slotIndex;
+        SkillId = skillId;
+    }
+}
+
 
 public class SkillSlotModel
 {
@@ -17,7 +38,9 @@ public class SkillSlotModel
     private readonly int[] _equipped = new int[EquippedSlotCount];  // 장착한 스킬
     private readonly List<int> _inventory = new();                  // 보유한 스킬
 
-    public event Action<SkillSlotChangeKind> OnChanged;
+    public event Action<SkillSlotChangeKind> OnSkillSlotChanged;        // 전체 변경 이벤트 -> 아래거로 대체 가능하지만 우선 남겨둠
+    public event Action<SkillSlotChangeEvent> OnSkillSlotChangeEvent;   // 개별 변경 이벤트
+
 
     public int GetEquipped(int index) => _equipped[index];
     public int GetInventory(int index) => _inventory[index];
@@ -65,22 +88,38 @@ public class SkillSlotModel
             _inventory.AddRange(inventory);
         }
 
-        OnChanged?.Invoke(SkillSlotChangeKind.Any);
+        OnSkillSlotChanged?.Invoke(SkillSlotChangeKind.Any);
+
+        for (int i = 0; i < _equipped.Length; i++)
+        {
+            OnSkillSlotChangeEvent?.Invoke(
+                new SkillSlotChangeEvent(SlotType.Equipped, i, _equipped[i]));
+        }
     }
 
 
 
     public void SwapEquipped(int a, int b)
     {
+        int oldA = _equipped[a];
+        int oldB = _equipped[b];
+
         (_equipped[a], _equipped[b]) = (_equipped[b], _equipped[a]);
-        OnChanged?.Invoke(SkillSlotChangeKind.EquippedChanged);
+        OnSkillSlotChanged?.Invoke(SkillSlotChangeKind.EquippedChanged);
+
+        OnSkillSlotChangeEvent?.Invoke(
+            new SkillSlotChangeEvent(SlotType.Equipped, a, _equipped[a]));
+        OnSkillSlotChangeEvent?.Invoke(
+            new SkillSlotChangeEvent(SlotType.Equipped, b, _equipped[b]));
     }
 
 
     public void ReplaceEquipped(int index, int skillId)
     {
         _equipped[index] = skillId;
-        OnChanged?.Invoke(SkillSlotChangeKind.EquippedChanged);
+        OnSkillSlotChanged?.Invoke(SkillSlotChangeKind.EquippedChanged);
+        OnSkillSlotChangeEvent?.Invoke(
+            new SkillSlotChangeEvent(SlotType.Equipped, index, skillId));
     }
 
     public void SetInitial(List<int> inventory, int[] equipped = null)
@@ -108,7 +147,7 @@ public class SkillSlotModel
             }
         }
 
-        OnChanged?.Invoke(SkillSlotChangeKind.Any);
+        OnSkillSlotChanged?.Invoke(SkillSlotChangeKind.Any);
     }
 
 
