@@ -45,6 +45,9 @@ public static class SnapshotParser
             }
         }
 
+        // Skill Slots
+        dto.SkillSlotDTO = ReadSkillSlots(root);
+
         // Levels
         dto.RelicLevels = ReadLevels(root, DatabaseKeys.RelicLevels);
         dto.UpgradeLevels = ReadLevels(root, DatabaseKeys.UpgradeLevels);
@@ -63,6 +66,63 @@ public static class SnapshotParser
             int level = (int)ToLong(kv.Value, 0);
             result[kv.Key] = Mathf.Max(0, level);
         }
+        return result;
+    }
+
+    private static SkillSlotDTO ReadSkillSlots(Dictionary<string, object> root)
+    {
+        var result = new SkillSlotDTO();
+
+        if (!TryGetDict(root, DatabaseKeys.SkillSlots, out var slotsRoot))
+            return result;
+
+        // Equipped
+        if (TryGetDict(slotsRoot, DatabaseKeys.Equipped, out var eqDict))
+        {
+            for (int i = 0; i < result.Equipped.Length; i++)
+            {
+                string k = i.ToString();
+                if (eqDict.TryGetValue(k, out var v))
+                {
+                    result.Equipped[i] = (int)ToLong(v, SkillId.None);
+                }
+                else
+                {
+                    result.Equipped[i] = SkillId.None;
+                }
+            }
+        }
+        else
+        {
+            // 없으면 전부 None
+            for (int i = 0; i < result.Equipped.Length; i++)
+            {
+                result.Equipped[i] = SkillId.None;
+            }
+        }
+
+        // Inventory
+        if (TryGetDict(slotsRoot, DatabaseKeys.Inventory, out var invDict))
+        {
+            //정렬해서 리스트로
+            var temp = new List<(int idx, int id)>();
+
+            foreach (var kv in invDict)
+            {
+                if (!int.TryParse(kv.Key, out int idx)) continue;
+                int id = (int)ToLong(kv.Value, SkillId.None);
+                temp.Add((idx, id));
+            }
+
+            temp.Sort((a, b) => a.idx.CompareTo(b.idx));
+
+            result.Inventory.Clear();
+            for (int i = 0; i < temp.Count; i++)
+            {
+                result.Inventory.Add(temp[i].id);
+            }
+        }
+
         return result;
     }
 
