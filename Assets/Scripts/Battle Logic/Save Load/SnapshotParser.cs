@@ -1,4 +1,5 @@
 ﻿using Firebase.Database;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,7 +9,7 @@ public static class SnapshotParser
     {
         var dto = new SaveDataDTO();
 
-        if (snapshot.Value is not Dictionary<string, object> root)
+        if (!TryGetMapFromSnapshot(snapshot, out var root))
         {
             return dto;
         }
@@ -77,19 +78,25 @@ public static class SnapshotParser
             return result;
 
         // Equipped
-        if (TryGetDict(slotsRoot, DatabaseKeys.Equipped, out var eqDict))
+        if (TryGetMap(slotsRoot, DatabaseKeys.Equipped, out var eqDict))    // Dictionary<string, object> 형태
         {
             for (int i = 0; i < result.Equipped.Length; i++)
             {
                 string k = i.ToString();
                 if (eqDict.TryGetValue(k, out var v))
-                {
                     result.Equipped[i] = (int)ToLong(v, SkillId.None);
-                }
                 else
-                {
                     result.Equipped[i] = SkillId.None;
-                }
+            }
+        }
+        else if (TryGetList(slotsRoot, DatabaseKeys.Equipped, out var eqList))  // IList 형태
+        {
+            for (int i = 0; i < result.Equipped.Length; i++)
+            {
+                if (i < eqList.Count)
+                    result.Equipped[i] = (int)ToLong(eqList[i], SkillId.None);
+                else
+                    result.Equipped[i] = SkillId.None;
             }
         }
         else
@@ -102,7 +109,9 @@ public static class SnapshotParser
         }
 
         // Inventory
-        if (TryGetDict(slotsRoot, DatabaseKeys.Inventory, out var invDict))
+        result.Inventory.Clear();
+
+        if (TryGetMap(slotsRoot, DatabaseKeys.Inventory, out var invDict))
         {
             //정렬해서 리스트로
             var temp = new List<(int idx, int id)>();
@@ -115,11 +124,16 @@ public static class SnapshotParser
             }
 
             temp.Sort((a, b) => a.idx.CompareTo(b.idx));
-
-            result.Inventory.Clear();
             for (int i = 0; i < temp.Count; i++)
             {
                 result.Inventory.Add(temp[i].id);
+            }
+        }
+        else if (TryGetList(slotsRoot, DatabaseKeys.Inventory, out var invList))
+        {
+            for (int i = 0; i < invList.Count; i++)
+            {
+                result.Inventory.Add((int)ToLong(invList[i], SkillId.None));
             }
         }
 
@@ -134,6 +148,69 @@ public static class SnapshotParser
             dict = d;
             return true;
         }
+        return false;
+    }
+
+    private static bool TryGetMap(Dictionary<string, object> root, string key, out Dictionary<string, object> map)
+    {
+        map = null;
+        if (!root.TryGetValue(key, out var obj) || obj == null) return false;
+
+        if (obj is Dictionary<string, object> d1)
+        {
+            map = d1;
+            return true;
+        }
+
+        // Dictionary<object, object> / Hashtable 케이스
+        if (obj is IDictionary dict)
+        {
+            var converted = new Dictionary<string, object>(dict.Count);
+            foreach (DictionaryEntry e in dict)
+                converted[e.Key.ToString()] = e.Value;
+            map = converted;
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool TryGetList(Dictionary<string, object> root, string key, out IList list)
+    {
+        list = null;
+        if (!root.TryGetValue(key, out var obj) || obj == null) return false;
+
+        if (obj is IList l)
+        {
+            list = l;
+            return true;
+        }
+        return false;
+    }
+
+    private static bool TryGetMapFromSnapshot(DataSnapshot snapshot, out Dictionary<string, object> root)
+    {
+        root = null;
+        object v = snapshot?.Value;
+        if (v == null) return false;
+
+        if (v is Dictionary<string, object> d)
+        {
+            root = d;
+            return true;
+        }
+
+        if (v is IDictionary dict)
+        {
+            var converted = new Dictionary<string, object>(dict.Count);
+            foreach (DictionaryEntry e in dict)
+            {
+                converted[e.Key.ToString()] = e.Value;
+            }
+            root = converted;
+            return true;
+        }
+
         return false;
     }
 
