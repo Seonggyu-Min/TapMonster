@@ -1,9 +1,7 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 
 // TODO: 슬롯 동적 변경
-// TODO: DTO 받아서 초기화
 public class SkillUIOrchestrator : MonoBehaviour
 {
     #region Fields and Properties and Constructor
@@ -11,9 +9,9 @@ public class SkillUIOrchestrator : MonoBehaviour
     [SerializeField] private SkillSlotView[] _equippedSlots;
     [SerializeField] private SkillSlotView[] _inventorySlots;
 
+    private SkillManager _skillManager;
     private SaveLoadManager _saveLoadManager;
     private SkillConfigSO _skillConfigSO;
-    private SkillSlotModel _model;
 
     #endregion
 
@@ -22,9 +20,9 @@ public class SkillUIOrchestrator : MonoBehaviour
 
     private void OnDestroy()
     {
-        if (_model != null)
+        if (_skillManager != null)
         {
-            _model.OnChanged -= OnModelChanged;
+            _skillManager.OnSkillSlotChanged -= OnModelChanged;
         }
     }
 
@@ -35,18 +33,18 @@ public class SkillUIOrchestrator : MonoBehaviour
 
     public void Init(
         SkillConfigSO skillConfigSO,
-        SkillSlotModel skillSlotModel,
+        SkillManager skillManager,
         SaveLoadManager saveLoadManager
         )
     {
         _skillConfigSO = skillConfigSO;
-        _model = skillSlotModel;
+        _skillManager = skillManager;
         _saveLoadManager = saveLoadManager;
 
-        if (_model != null)
+        if (_skillManager != null)
         {
-            _model.OnChanged -= OnModelChanged;
-            _model.OnChanged += OnModelChanged;
+            _skillManager.OnSkillSlotChanged -= OnModelChanged;
+            _skillManager.OnSkillSlotChanged += OnModelChanged;
         }
 
         InitAllSlots();
@@ -67,7 +65,7 @@ public class SkillUIOrchestrator : MonoBehaviour
         // 2) Equipped <-> Equipped : 위치 교환 허용
         if (source.Kind == SlotKind.Equipped && target.Kind == SlotKind.Equipped)
         {
-            _model.SwapEquipped(source.Index, target.Index);
+            _skillManager.SwapEquipped(source.Index, target.Index);
             return true;
         }
 
@@ -81,7 +79,7 @@ public class SkillUIOrchestrator : MonoBehaviour
                 return false;
             }
 
-            _model.ReplaceEquipped(target.Index, sourceId);
+            _skillManager.ReplaceEquipped(target.Index, sourceId);
             return true;
         }
 
@@ -95,13 +93,13 @@ public class SkillUIOrchestrator : MonoBehaviour
     {
         if (slot.Kind == SlotKind.Equipped)
         {
-            return _model.GetEquipped(slot.Index);
+            return _skillManager.GetEquipped(slot.Index);
         }
 
         // Inventory
-        if (slot.Index < _model.Inventory.Count)
+        if (slot.Index < _skillManager.Inventory.Count)
         {
-            return _model.GetInventory(slot.Index);
+            return _skillManager.GetInventory(slot.Index);
         }
         return SkillId.None;
     }
@@ -111,7 +109,7 @@ public class SkillUIOrchestrator : MonoBehaviour
         // equipped
         for (int i = 0; i < _equippedSlots.Length; i++)
         {
-            int id = _model.GetEquipped(i);
+            int id = _skillManager.GetEquipped(i);
             if (id != SkillId.None && _skillConfigSO.TryGet(id, out var def))
             {
                 _equippedSlots[i].Render(def.Icon);
@@ -127,7 +125,7 @@ public class SkillUIOrchestrator : MonoBehaviour
         {
             _inventorySlots[i].SetIndex(i);
 
-            int id = (i < _model.Inventory.Count) ? _model.GetInventory(i) : SkillId.None;
+            int id = (i < _skillManager.Inventory.Count) ? _skillManager.GetInventory(i) : SkillId.None;
             if (id != SkillId.None && _skillConfigSO.TryGet(id, out var def))
             {
                 _inventorySlots[i].Render(def.Icon);
@@ -205,7 +203,7 @@ public class SkillUIOrchestrator : MonoBehaviour
         for (int i = 0; i < _equippedSlots.Length; i++)
         {
             if (i == exceptIndex) continue;
-            if (_model.GetEquipped(i) == skillId) return true;
+            if (_skillManager.GetEquipped(i) == skillId) return true;
         }
         return false;
     }
