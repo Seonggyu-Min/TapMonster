@@ -1,39 +1,65 @@
-﻿public class StageManager
-{
-    private StageService _stageService;
-    private GameConfigSO _gameConfigSO;
-    private readonly ISaveMark _saveMark;
+﻿using System;
 
-    public StageManager(StageService stageService, GameConfigSO gameConfigSO, ISaveMark saveMark)
+public class StageManager
+{
+    private readonly StageProgressService _stageProgressService;
+    private readonly StageHpService _stageHpService;
+
+    private ISaveMark _saveMark;
+
+    public event Action<int> OnStageChanged;
+
+    public StageManager(
+        StageProgressService stageProgressService,
+        StageHpService stageHpService
+        )
     {
-        _stageService = stageService;
-        _gameConfigSO = gameConfigSO;
+        _stageProgressService = stageProgressService;
+        _stageHpService = stageHpService;
+    }
+    public void Initialize(ISaveMark saveMark)
+    {
         _saveMark = saveMark;
     }
+    public void Activate()
+    {
+        _stageHpService.OnMonsterDefeated += HandleMonsterDefeated;
+    }
+    public void Deactivate()
+    {
+        if (_stageHpService != null)
+        {
+            _stageHpService.OnMonsterDefeated -= HandleMonsterDefeated;
+        }
+    }
 
-    public int CurrentStage => _stageService.CurrentStage;
+
+
+    public int CurrentStage => _stageProgressService.CurrentStage;
+
+    public IDamageable CurrentEnemy => _stageHpService.CurrentEnemy;
+
+    public void BindEnemy(IDamageable enemy) => _stageHpService.BindEnemy(enemy);
+
+    public void SpawnOrResetEnemy() => _stageHpService.SpawnOrResetForCurrentStage(_stageProgressService.CurrentStage);
 
     public void OnMonsterDefeated()
     {
-        _stageService.AdvanceStage();
+        _stageProgressService.AdvanceStage();
 
         _saveMark.MarkDirty(SaveDirtyFlags.Stage);
         _saveMark.RequestSave();
+
+        OnStageChanged?.Invoke(_stageProgressService.CurrentStage);
     }
 
     public BigNumber GetMonsterHpForCurrentStage()
+        => _stageHpService.GetMonsterHp(_stageProgressService.CurrentStage);
+
+
+    private void HandleMonsterDefeated()
     {
-        int stage = _stageService.CurrentStage;
-
-        // TODO: _config 기반 계산
-
-        return BigNumber.One;
-    }
-
-    public BigNumber GetMonsterRewardForCurrentStage()
-    {
-        // TODO: _config 기반 계산
-
-        return BigNumber.One;
+        OnMonsterDefeated(); // 스테이지 진행/저장/이벤트
+        SpawnOrResetEnemy(); // 다음 스테이지 몬스터 스폰
     }
 }
