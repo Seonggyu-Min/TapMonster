@@ -140,7 +140,11 @@ public class GameBootstrapper : MonoBehaviour
         _relicGachaService = new(_gameStateModel.RelicModel, _gameConfigSO);
 
         _upgradeService = new(_gameStateModel.UpgradeModel);
-        _skillService = new(_gameStateModel.SkillModel, _gameStateModel.SkillCooldownModel);
+        _skillService = new(
+            _gameStateModel.SkillModel,
+            _gameStateModel.SkillCooldownModel,
+            _gameStateModel.SkillSlotModel
+            );
 
         _combatService = new();
         _walletService = new(_gameStateModel.WalletModel);
