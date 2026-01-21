@@ -14,6 +14,10 @@ public class SkillConfigSO : ScriptableObject
     {
         [field: SerializeField] public int Id { get; private set; }
 
+        [Header("Info")]
+        public string Name;
+        public int MaxLevel = 100;
+
         [Header("Kind")]
         public SkillKind Kind = SkillKind.Passive;
 
@@ -21,13 +25,19 @@ public class SkillConfigSO : ScriptableObject
         public BigNumber BaseCost = new BigNumber(5, 2);
         public double CostGrowth = 1.18;
 
+        [Header("Cooldown (Active Only)")]
+        public float CooldownSeconds = 5f;
+
         [Header("Passive Effect")]
         public SkillPassiveType PassiveType = SkillPassiveType.None;
         public double PassiveValuePerLevel = 0.02;
 
         [Header("Active Effect (DamageContext)")]
         public SkillActiveType ActiveType = SkillActiveType.None;
-        public double ActiveMulPerLevel = 0.10; // 레벨당 10% 더 쎔
+        public double ActiveMulPerLevel = 0.10;
+
+        [Header("Icon")]
+        public Sprite Icon;
     }
 
     public bool TryGet(int id, out SkillDef def)
@@ -36,7 +46,7 @@ public class SkillConfigSO : ScriptableObject
         return _cache.TryGetValue(id, out def);
     }
 
-    public IReadOnlyList<SkillDef> All => _defs;
+    public IReadOnlyList<SkillDef> SkillDefs => _defs;
 
     private Dictionary<int, SkillDef> BuildCache()
     {
