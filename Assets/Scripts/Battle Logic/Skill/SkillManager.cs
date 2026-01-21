@@ -1,9 +1,32 @@
-﻿public class SkillManager : IStatContributor, IStatModifier
+﻿using System;
+using UnityEngine;
+
+
+public class SkillManager : IStatContributor, IStatModifier
 {
     private SkillService _skillService;
     private GameConfigSO _gameConfigSO;
     private PurchaseManager _purchaseManager;
     private ISaveMark _saveMark;
+
+    public event Action<int, int> OnSkillLevelChanged
+    {
+        add => _skillService.OnSkillLevelChanged += value;
+        remove => _skillService.OnSkillLevelChanged -= value;
+    }
+
+    public event Action<SkillUseEvent> OnSkillUsed  // UI
+    {
+        add => _skillService.OnSkillUsed += value;
+        remove => _skillService.OnSkillUsed -= value;
+    }
+
+    public event Action<int, SkillUseResult> OnSkillUseFailed // UI
+    {
+        add => _skillService.OnSkillUseFailed += value;
+        remove => _skillService.OnSkillUseFailed -= value;
+    }
+
 
     public SkillManager(
         SkillService skillService,
@@ -18,20 +41,55 @@
         _saveMark = saveMark;
     }
 
+
+    public int GetLevel(int skillId)
+    {
+        return _skillService.GetLevel(skillId);
+    }
+
+    public Cost GetNextCost(int skillId)
+    {
+        return new Cost(
+            CurrencyId.Gold,
+            _skillService.GetLevelUpCost(
+                _gameConfigSO,
+                skillId,
+                _skillService.GetLevel(skillId) + 1));
+    }
+
     public void TryLevelUpSkill(int skillId)
     {
         int nextLevel = _skillService.GetLevel(skillId) + 1;
+        Cost cost = new Cost(
+            CurrencyId.Gold,
+            _skillService.GetLevelUpCost(
+                _gameConfigSO,
+                skillId,
+                nextLevel));
 
-        // TODO: 스킬 강화 비용 config에서 계산
-        BigNumber cost = BigNumber.One;
-
-        var result = _purchaseManager.TryPay(new Cost(CurrencyId.Gold, cost));
+        var result = _purchaseManager.TryPay(cost);
         if (result != PurchaseResult.Success) return;
 
         _skillService.AddLevel(skillId, +1);
 
         _saveMark.MarkDirty(SaveDirtyFlags.Skill);
         _saveMark.RequestSave();
+    }
+
+    public SkillUseResult TryUseSkill(int skillId)
+    {
+        float now = Time.unscaledTime;
+
+        SkillUseResult result = _skillService.TryUseSkill(skillId, _gameConfigSO, now);
+
+        if (result == SkillUseResult.Success)
+        {
+            // 일단 쿨타임은 저장 안함
+            //_saveMark.MarkDirty(SaveDirtyFlags.Skill);
+            //_saveMark.RequestSave();
+        }
+
+        return result;
     }
 
     public void Contribute(ref PlayerStatBuildContext buildContext)
