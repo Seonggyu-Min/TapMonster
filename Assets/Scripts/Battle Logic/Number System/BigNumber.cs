@@ -145,6 +145,8 @@ public struct BigNumber : IComparable<BigNumber>, IEquatable<BigNumber>
 
         return new BigNumber(newMan, newExp);
     }
+    public static BigNumber Max(BigNumber a, BigNumber b) => a >= b ? a : b;
+    public static BigNumber Min(BigNumber a, BigNumber b) => a <= b ? a : b;
 
     #endregion
 
