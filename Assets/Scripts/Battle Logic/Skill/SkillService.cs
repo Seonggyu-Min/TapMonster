@@ -3,14 +3,69 @@
 public class SkillService
 {
     private SkillModel _skillModel;
+    private SkillCooldownModel _skillCooldownModel;
 
-    public SkillService(SkillModel skillModel)
+    public event Action<SkillUseEvent> OnSkillUsed;
+    public event Action<int, SkillUseResult> OnSkillUseFailed;
+
+    public event Action<int, int> OnSkillLevelChanged
+    {
+        add => _skillModel.OnSkillLevelChanged += value;
+        remove => _skillModel.OnSkillLevelChanged -= value;
+    }
+
+    public SkillService(SkillModel skillModel, SkillCooldownModel skillCooldownModel)
     {
         _skillModel = skillModel;
+        _skillCooldownModel = skillCooldownModel;
     }
 
     public int GetLevel(int skillId) => _skillModel.GetLevel(skillId);
     public void AddLevel(int skillId, int delta) => _skillModel.AddLevel(skillId, delta);
+
+
+    public bool CanUseSkill(int skillId, float now)
+        => _skillCooldownModel.CanUse(skillId, now);
+
+    public float GetCooldownRemaining(int skillId, float now)
+        => _skillCooldownModel.GetRemaining(skillId, now);
+
+
+    public SkillUseResult TryUseSkill(int skillId, GameConfigSO config, float now)
+    {
+        if (!config.SkillConfigSO.TryGet(skillId, out var def))
+        {
+            OnSkillUseFailed?.Invoke(skillId, SkillUseResult.InvalidSkillId);
+            return SkillUseResult.InvalidSkillId;
+        }
+
+        int level = _skillModel.GetLevel(skillId);
+        if (level <= 0)
+        {
+            OnSkillUseFailed?.Invoke(skillId, SkillUseResult.LevelZero);
+            return SkillUseResult.LevelZero;
+        }
+
+        if (def.Kind != SkillKind.Active)
+        {
+            OnSkillUseFailed?.Invoke(skillId, SkillUseResult.NotActive);
+            return SkillUseResult.NotActive;
+        }
+
+        if (!_skillCooldownModel.CanUse(skillId, now))
+        {
+            OnSkillUseFailed?.Invoke(skillId, SkillUseResult.Cooldown);
+            return SkillUseResult.Cooldown;
+        }
+
+
+        float cd = def.CooldownSeconds;
+        _skillCooldownModel.StartCooldown(skillId, now, cd);
+
+        var useEvent = new SkillUseEvent(skillId, level, cd);
+        OnSkillUsed?.Invoke(useEvent);
+        return SkillUseResult.Success;
+    }
 
     public BigNumber GetLevelUpCost(GameConfigSO config, int skillId, int nextLevel)
     {
@@ -23,7 +78,7 @@ public class SkillService
 
     public void ApplyPassiveToStat(ref PlayerStatBuildContext ctx, GameConfigSO config)
     {
-        foreach (var kv in _skillModel.SkillLevels) // IReadOnlyDictionary<int,int> 필요
+        foreach (var kv in _skillModel.SkillLevels)
         {
             int id = kv.Key;
             int level = kv.Value;
@@ -71,8 +126,6 @@ public class SkillService
 
     public void ApplyActiveToDamage(ref DamageContext dmg, GameConfigSO config)
     {
-        // “현재 발동 중인 액티브 스킬”을 어떻게 관리할지(쿨/지속)는
-        // SkillManager/Combat에서 관리하고 여기엔 '적용 로직'만 두는 게 좋음.
         foreach (var kv in _skillModel.SkillLevels)
         {
             int id = kv.Key;
@@ -99,5 +152,30 @@ public class SkillService
                     break;
             }
         }
+    }
+}
+
+
+public enum SkillUseResult
+{
+    Success,            // 성공
+    InvalidSkillId,     // 잘못된 스킬 ID
+    LevelZero,          // 레벨 0
+    Cooldown,           // 쿨타임 중
+    NotActive,          // 액티브 스킬이 아님
+}
+
+
+public readonly struct SkillUseEvent
+{
+    public readonly int SkillId;
+    public readonly int Level;
+    public readonly float CooldownSeconds;
+
+    public SkillUseEvent(int skillId, int level, float cooldownSeconds)
+    {
+        SkillId = skillId;
+        Level = level;
+        CooldownSeconds = cooldownSeconds;
     }
 }
