@@ -1,5 +1,4 @@
 ﻿using System;
-using Unity.VisualScripting.FullSerializer;
 
 public class UpgradeManager : IStatContributor
 {
@@ -7,6 +6,13 @@ public class UpgradeManager : IStatContributor
     private GameConfigSO _gameConfigSO;
     private PurchaseManager _purchaseManager;
     private ISaveMark _saveMark;
+
+    public event Action<int, int> OnUpgradeLevelChanged
+    {
+        add => _upgradeService.OnUpgradeLevelChanged += value;
+        remove => _upgradeService.OnUpgradeLevelChanged -= value;
+    }
+
 
     public UpgradeManager(
         UpgradeService upgradeService,
@@ -21,12 +27,32 @@ public class UpgradeManager : IStatContributor
         _saveMark = saveMark;
     }
 
+    public int GetLevel(int upgradeId)
+    {
+        return _upgradeService.GetLevel(upgradeId);
+    }
+
+    public Cost GetNextCost(int upgradeId)
+    {
+        return new Cost(
+            CurrencyId.Gold,
+            _upgradeService.GetLevelUpCost(
+                _gameConfigSO,
+                upgradeId,
+                _upgradeService.GetLevel(upgradeId) + 1));
+    }
+
     public bool TryUpgrade(int upgradeId)
     {
         int nextLevel = _upgradeService.GetLevel(upgradeId) + 1;
-        BigNumber cost = _upgradeService.GetUpgradeCost(_gameConfigSO, upgradeId, nextLevel);
+        Cost cost = new Cost(
+            CurrencyId.Gold,
+            _upgradeService.GetLevelUpCost(
+                _gameConfigSO,
+                upgradeId,
+                nextLevel));
 
-        var result = _purchaseManager.TryPay(new Cost(CurrencyId.Gold, cost));
+        var result = _purchaseManager.TryPay(cost);
         if (result != PurchaseResult.Success) return false;
 
         _upgradeService.AddLevel(upgradeId, +1);
@@ -37,7 +63,6 @@ public class UpgradeManager : IStatContributor
         return true;
     }
 
-    // TODO: 업그레이드 가격 조회
 
     public void Contribute(ref PlayerStatBuildContext buildContext)
     {
