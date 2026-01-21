@@ -13,10 +13,15 @@ public class InGameUIComposer : MonoBehaviour
     [Header("Skill Inventory Panel Refs")]
     [SerializeField] private SkillUIOrchestrator _skillUIOrchestrator;
 
+    [Header("Skill Slot Panel Refs")]
+    [SerializeField] private SkillLoadoutItemView[] _skillLoadoutItemViews;
+
 
     private List<IDisposable> _disposables = new();
     private GameContext _gameContext;
     private GameConfigSO _gameConfigSO;
+
+    private SkillLoadoutPresenter _skillLoadoutPresenter;
 
 
     public void Init(GameContext gameContext, GameConfigSO gameConfigSO)
@@ -50,13 +55,26 @@ public class InGameUIComposer : MonoBehaviour
         skillPresenter.Initialize();
         _disposables.Add(skillPresenter);
 
+        _skillLoadoutPresenter = new SkillLoadoutPresenter(
+            _gameContext.SkillManager,
+            _gameConfigSO.SkillConfigSO,
+            _skillLoadoutItemViews
+        );
+        _skillLoadoutPresenter.Initialize();
+        _disposables.Add(_skillLoadoutPresenter);
+
 
         // --- Mono Behaviours ---
         _skillUIOrchestrator.Init(
             _gameConfigSO.SkillConfigSO,
-            _gameContext.GameStateModel.SkillSlotModel,
+            _gameContext.SkillManager,
             _gameContext.SaveLoadManager
             );
+    }
+
+    private void Update()
+    {
+        _skillLoadoutPresenter?.Tick(Time.unscaledTime);
     }
 
     private void OnDestroy()
