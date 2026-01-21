@@ -10,6 +10,7 @@ public class SaveDataDTO
 
     public StageDTO StageDTO = new();
     public WalletDTO WalletDTO = new();
+    public SkillSlotDTO SkillSlotDTO = new();
 
     public Dictionary<string, int> RelicLevels = new();
     public Dictionary<string, int> UpgradeLevels = new();
@@ -28,6 +29,14 @@ public class StageDTO
 public class WalletDTO
 {
     public Dictionary<string, BigNumberDTO> Currencies = new();
+}
+
+
+[Serializable]
+public class SkillSlotDTO
+{
+    public int[] Equipped = new int[SkillSlotModel.EquippedSlotCount];
+    public List<int> Inventory = new();
 }
 
 
