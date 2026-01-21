@@ -6,14 +6,15 @@ public static class SaveDataDtoExtensions
     {
         dto ??= new SaveDataDTO();
 
-        dto.StageDTO ??= new StageDTO();
-        dto.WalletDTO ??= new WalletDTO();
+        dto.StageDTO ??= new();
+        dto.WalletDTO ??= new();
+        dto.SkillSlotDTO ??= new();
 
-        dto.WalletDTO.Currencies ??= new Dictionary<string, BigNumberDTO>();
+        dto.WalletDTO.Currencies ??= new();
 
-        dto.RelicLevels ??= new Dictionary<string, int>();
-        dto.UpgradeLevels ??= new Dictionary<string, int>();
-        dto.SkillLevels ??= new Dictionary<string, int>();
+        dto.RelicLevels ??= new();
+        dto.UpgradeLevels ??= new();
+        dto.SkillLevels ??= new();
 
         return dto;
     }
