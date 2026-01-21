@@ -13,11 +13,12 @@ public class GameCoordinator : MonoBehaviour
     private const LogCategory CurrentCategory = LogCategory.GameLogic;
 
 
-    public void Init(GameContext ctx)
+    public void Init(GameContext gameContext)
     {
-        _gameContext = ctx;
-        _initialized = true;
+        _gameContext = gameContext;
+
         HandleSubscribe();
+        _initialized = true;
     }
 
 
