@@ -10,17 +10,24 @@ public class UpgradeConfigSO : ScriptableObject
     private Dictionary<int, UpgradeDef> _cache;
 
     [Serializable]
-    public sealed class UpgradeDef : IHasId
+    public class UpgradeDef : IHasId
     {
         [field: SerializeField] public int Id { get; private set; }
 
+        [Header("Info")]
+        public string Name;
+        public int MaxLevel = 100;
+
         [Header("Cost Curve")]
-        public BigNumber BaseCost = new BigNumber(1, 2);   // 1e2
+        public BigNumber BaseCost = new BigNumber(1, 2);  // 1e2
         public double CostGrowth = 1.15;                  // base * growth^(level)
 
         [Header("Effect")]
         public UpgradeStatType StatType = UpgradeStatType.ManualAdditiveDamagePercent;
         public double ValuePerLevel = 1.0;                // 타입에 따라 의미 달라짐
+
+        [Header("Icon")]
+        public Sprite Icon;
     }
 
     public bool TryGet(int id, out UpgradeDef def)
@@ -29,7 +36,7 @@ public class UpgradeConfigSO : ScriptableObject
         return _cache.TryGetValue(id, out def);
     }
 
-    public IReadOnlyList<UpgradeDef> All => _defs;
+    public IReadOnlyList<UpgradeDef> UpgradeDefs => _defs;
 
     private Dictionary<int, UpgradeDef> BuildCache()
     {
