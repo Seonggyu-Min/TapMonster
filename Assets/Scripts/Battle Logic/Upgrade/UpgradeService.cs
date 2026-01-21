@@ -4,6 +4,12 @@ public class UpgradeService
 {
     private UpgradeModel _upgradeModel;
 
+    public event Action<int, int> OnUpgradeLevelChanged
+    {
+        add => _upgradeModel.OnUpgradeLevelChanged += value;
+        remove => _upgradeModel.OnUpgradeLevelChanged -= value;
+    }
+
     public UpgradeService(UpgradeModel upgradeModel)
     {
         _upgradeModel = upgradeModel;
@@ -12,12 +18,11 @@ public class UpgradeService
     public int GetLevel(int id) => _upgradeModel.GetLevel(id);
     public void AddLevel(int id, int delta) => _upgradeModel.AddLevel(id, delta);
 
-    public BigNumber GetUpgradeCost(GameConfigSO config, int upgradeId, int nextLevel)
+    public BigNumber GetLevelUpCost(GameConfigSO config, int upgradeId, int nextLevel)
     {
         if (!config.UpgradeConfigSO.TryGet(upgradeId, out var def))
             return BigNumber.One;
 
-        // base * growth^(nextLevel-1)
         double mul = Math.Pow(def.CostGrowth, Math.Max(0, nextLevel - 1));
         return def.BaseCost * mul;
     }
