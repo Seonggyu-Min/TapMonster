@@ -11,7 +11,7 @@ public static class BigNumberFormatter
     /// <param name="decimals">소수점 자리 수</param>
     /// <param name="alphaStartGroup">몇 번째 부터 알파벳 넘버 시작할지</param>
     /// <returns></returns>
-    public static string ToString(BigNumber value,int decimals = 2,int alphaStartGroup = 5)
+    public static string ToString(BigNumber value, int decimals = 2, int alphaStartGroup = 5)
     {
         if (value.Mantissa == 0) return "0";
 
