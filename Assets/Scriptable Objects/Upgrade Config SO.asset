@@ -14,9 +14,32 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _defs:
   - <Id>k__BackingField: 10001
+    Name: Test_Manual_Damage_Additive
+    MaxLevel: 100
     BaseCost:
       Mantissa: 1
       Exponent: 2
     CostGrowth: 1.15
     StatType: 0
     ValuePerLevel: 10
+    Icon: {fileID: 21300000, guid: ef54789e92f65414b885fff8c36ca056, type: 3}
+  - <Id>k__BackingField: 10002
+    Name: Test_Auto_Damage_Additive
+    MaxLevel: 100
+    BaseCost:
+      Mantissa: 1
+      Exponent: 2
+    CostGrowth: 1.15
+    StatType: 1
+    ValuePerLevel: 10
+    Icon: {fileID: 21300000, guid: ef54789e92f65414b885fff8c36ca056, type: 3}
+  - <Id>k__BackingField: 10003
+    Name: Test_Manual_Damage_Multiplier
+    MaxLevel: 100
+    BaseCost:
+      Mantissa: 1
+      Exponent: 2
+    CostGrowth: 1.15
+    StatType: 2
+    ValuePerLevel: 10
+    Icon: {fileID: 21300000, guid: ef54789e92f65414b885fff8c36ca056, type: 3}

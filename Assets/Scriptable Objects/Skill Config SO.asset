@@ -12,4 +12,74 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8996c3345abc69648afb7ef36fb82d8c, type: 3}
   m_Name: Skill Config SO
   m_EditorClassIdentifier: 
-  _defs: []
+  _defs:
+  - <Id>k__BackingField: 20001
+    Name: Test_Active_Skill_1
+    MaxLevel: 100
+    Kind: 1
+    BaseCost:
+      Mantissa: 1
+      Exponent: 2
+    CostGrowth: 1.15
+    CooldownSeconds: 5
+    PassiveType: 0
+    PassiveValuePerLevel: 0
+    ActiveType: 1
+    ActiveMulPerLevel: 0.1
+    Icon: {fileID: 21300000, guid: ef54789e92f65414b885fff8c36ca056, type: 3}
+  - <Id>k__BackingField: 20002
+    Name: Test_Active_Skill_2
+    MaxLevel: 100
+    Kind: 1
+    BaseCost:
+      Mantissa: 1
+      Exponent: 2
+    CostGrowth: 1.15
+    CooldownSeconds: 5
+    PassiveType: 0
+    PassiveValuePerLevel: 0
+    ActiveType: 1
+    ActiveMulPerLevel: 0.1
+    Icon: {fileID: -516134271, guid: ab37a4e0dbe45014f86269860c93cafd, type: 3}
+  - <Id>k__BackingField: 20003
+    Name: Test_Active_Skill_3
+    MaxLevel: 100
+    Kind: 1
+    BaseCost:
+      Mantissa: 1
+      Exponent: 2
+    CostGrowth: 1.15
+    CooldownSeconds: 5
+    PassiveType: 0
+    PassiveValuePerLevel: 0
+    ActiveType: 1
+    ActiveMulPerLevel: 0.1
+    Icon: {fileID: 21300000, guid: bcc7dd75abdc1a74497c9d657e1d6cf5, type: 3}
+  - <Id>k__BackingField: 20004
+    Name: Test_Active_Skill_4
+    MaxLevel: 100
+    Kind: 1
+    BaseCost:
+      Mantissa: 1
+      Exponent: 2
+    CostGrowth: 1.15
+    CooldownSeconds: 5
+    PassiveType: 0
+    PassiveValuePerLevel: 0
+    ActiveType: 1
+    ActiveMulPerLevel: 0.1
+    Icon: {fileID: 21300000, guid: 44a054df1702e39458b7072b08d0f212, type: 3}
+  - <Id>k__BackingField: 20005
+    Name: Test_Active_Skill_5
+    MaxLevel: 100
+    Kind: 1
+    BaseCost:
+      Mantissa: 1
+      Exponent: 2
+    CostGrowth: 1.15
+    CooldownSeconds: 5
+    PassiveType: 0
+    PassiveValuePerLevel: 0
+    ActiveType: 1
+    ActiveMulPerLevel: 0.1
+    Icon: {fileID: 21300000, guid: 898f886a39d714db5b90d2c36676c894, type: 3}
