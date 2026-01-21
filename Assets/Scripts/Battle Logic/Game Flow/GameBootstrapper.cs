@@ -5,15 +5,18 @@ using UnityEngine;
 public class GameBootstrapper : MonoBehaviour
 {
     [SerializeField] private GameCoordinator _coordinator;
+    [SerializeField] private InGameUIComposer _uiComposer;
     [SerializeField] private GameConfigSO _gameConfigSO;
 
-    private GameContext _ctx;
+    private GameContext _gameContext;
 
     // Models
     private StageModel _stageModel;
     private RelicModel _relicModel;
     private UpgradeModel _upgradeModel;
     private SkillModel _skillModel;
+    private SkillCooldownModel _skillCooldownModel;
+    private SkillSlotModel _skillSlotModel; 
     private WalletModel _walletModel;
     private GameStateModel _gameStateModel;
 
@@ -57,16 +60,22 @@ public class GameBootstrapper : MonoBehaviour
 
     private void Awake()
     {
-        _ctx = BuildContext();
-        _coordinator.Init(_ctx);
+        _gameContext = BuildContext();
+        _coordinator.Init(_gameContext);
 
         StartGameAsync(this.GetCancellationTokenOnDestroy()).Forget();
+    }
+
+    private void Start()
+    {
+        _uiComposer.Init(_gameContext, _gameConfigSO);
+        _uiComposer.Compose();
     }
 
 
     private async UniTaskVoid StartGameAsync(CancellationToken ct)
     {
-        await _ctx.SaveLoadManager.LoadAllAsync(ct);
+        await _gameContext.SaveLoadManager.LoadAllAsync(ct);
         //_ctx.StatManager.RebuildSnapshot();
     }
 
@@ -103,11 +112,15 @@ public class GameBootstrapper : MonoBehaviour
         _relicModel = new();
         _upgradeModel = new();
         _skillModel = new();
+        _skillCooldownModel = new();
+        _skillSlotModel = new();
         _walletModel = new();
 
         _gameStateModel = new(
             relicModel: _relicModel,
             skillModel: _skillModel,
+            skillCooldownModel: _skillCooldownModel,
+            skillSlotModel: _skillSlotModel,
             stageModel: _stageModel,
             upgradeModel: _upgradeModel,
             walletModel: _walletModel
@@ -116,8 +129,8 @@ public class GameBootstrapper : MonoBehaviour
 
     private void ConstructServices()
     {
-        _saveLoadService = new();
         _savePatchBuilder = new();
+        _saveLoadService = new();
 
         _statBuilderService = new();
 
@@ -127,7 +140,7 @@ public class GameBootstrapper : MonoBehaviour
         _relicGachaService = new(_gameStateModel.RelicModel, _gameConfigSO);
 
         _upgradeService = new(_gameStateModel.UpgradeModel);
-        _skillService = new(_gameStateModel.SkillModel);
+        _skillService = new(_gameStateModel.SkillModel, _gameStateModel.SkillCooldownModel);
 
         _combatService = new();
         _walletService = new(_gameStateModel.WalletModel);
