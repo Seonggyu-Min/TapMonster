@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 
@@ -25,6 +26,18 @@ public class SkillManager : IStatContributor, IStatModifier
     {
         add => _skillService.OnSkillUseFailed += value;
         remove => _skillService.OnSkillUseFailed -= value;
+    }
+
+    public event Action<SkillSlotChangeKind> OnSkillSlotChanged
+    {
+        add => _skillService.OnSkillSlotChanged += value;
+        remove => _skillService.OnSkillSlotChanged -= value;
+    }
+
+    public event Action<SkillSlotChangeEvent> OnSkillSlotChangeEvent
+    {
+        add => _skillService.OnSkillSlotChangeEvent += value;
+        remove => _skillService.OnSkillSlotChangeEvent -= value;
     }
 
 
@@ -56,6 +69,15 @@ public class SkillManager : IStatContributor, IStatModifier
                 skillId,
                 _skillService.GetLevel(skillId) + 1));
     }
+
+    public bool CanUseSkill(int skillId, float now)
+        => _skillService.CanUseSkill(skillId, now);
+
+    public float GetCooldownRemaining(int skillId, float now)
+        => _skillService.GetCooldownRemaining(skillId, now);
+
+    public float GetSkillCooldownSeconds(int skillId)
+        => _skillService.GetSkillCooldownSeconds(_gameConfigSO, skillId);
 
     public void TryLevelUpSkill(int skillId)
     {
@@ -101,4 +123,13 @@ public class SkillManager : IStatContributor, IStatModifier
     {
         _skillService.ApplyActiveToDamage(ref damageContext, _gameConfigSO);
     }
+
+    public IReadOnlyList<int> Inventory => _skillService.Inventory;
+    public int GetEquipped(int index) => _skillService.GetEquipped(index);
+    public int GetInventory(int index) => _skillService.GetInventory(index);
+    public void SwapEquipped(int a, int b) => _skillService.SwapEquipped(a, b);
+    public void ReplaceEquipped(int index, int skillId)
+        => _skillService.ReplaceEquipped(index, skillId);
+    public void SetInitial(List<int> inventory, int[] equipped = null)
+        => _skillService.SetInitial(inventory, equipped);
 }

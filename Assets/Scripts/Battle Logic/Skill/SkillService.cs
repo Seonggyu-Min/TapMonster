@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 
 public class SkillService
 {
     private SkillModel _skillModel;
     private SkillCooldownModel _skillCooldownModel;
+    private SkillSlotModel _skillSlotModel;
 
     public event Action<SkillUseEvent> OnSkillUsed;
     public event Action<int, SkillUseResult> OnSkillUseFailed;
@@ -14,10 +16,27 @@ public class SkillService
         remove => _skillModel.OnSkillLevelChanged -= value;
     }
 
-    public SkillService(SkillModel skillModel, SkillCooldownModel skillCooldownModel)
+    public event Action<SkillSlotChangeKind> OnSkillSlotChanged
+    {
+        add => _skillSlotModel.OnSkillSlotChanged += value;
+        remove => _skillSlotModel.OnSkillSlotChanged -= value;
+    }
+
+    public event Action<SkillSlotChangeEvent> OnSkillSlotChangeEvent
+    {
+        add => _skillSlotModel.OnSkillSlotChangeEvent += value;
+        remove => _skillSlotModel.OnSkillSlotChangeEvent -= value;
+    }
+
+    public SkillService(
+        SkillModel skillModel,
+        SkillCooldownModel skillCooldownModel,
+        SkillSlotModel skillSlotModel
+        )
     {
         _skillModel = skillModel;
         _skillCooldownModel = skillCooldownModel;
+        _skillSlotModel = skillSlotModel;
     }
 
     public int GetLevel(int skillId) => _skillModel.GetLevel(skillId);
@@ -65,6 +84,12 @@ public class SkillService
         var useEvent = new SkillUseEvent(skillId, level, cd);
         OnSkillUsed?.Invoke(useEvent);
         return SkillUseResult.Success;
+    }
+
+    public float GetSkillCooldownSeconds(GameConfigSO config, int skillId)
+    {
+        if (!config.SkillConfigSO.TryGet(skillId, out var def)) return 0f;
+        return def.CooldownSeconds;
     }
 
     public BigNumber GetLevelUpCost(GameConfigSO config, int skillId, int nextLevel)
@@ -153,6 +178,13 @@ public class SkillService
             }
         }
     }
+
+    public IReadOnlyList<int> Inventory => _skillSlotModel.Inventory;
+    public int GetEquipped(int index) => _skillSlotModel.GetEquipped(index);
+    public int GetInventory(int index) => _skillSlotModel.GetInventory(index);
+    public void SwapEquipped(int a, int b) => _skillSlotModel.SwapEquipped(a, b);
+    public void ReplaceEquipped(int index, int skillId) => _skillSlotModel.ReplaceEquipped(index, skillId);
+    public void SetInitial(List<int> inventory, int[] equipped = null) => _skillSlotModel.SetInitial(inventory, equipped);
 }
 
 
