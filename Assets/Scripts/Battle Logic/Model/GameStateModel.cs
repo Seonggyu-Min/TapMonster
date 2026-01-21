@@ -8,6 +8,8 @@ public class GameStateModel
 
     private RelicModel _relicModel;
     private SkillModel _skillModel;
+    private SkillCooldownModel _skillCooldownModel;
+    private SkillSlotModel _skillSlotModel;
     private StageModel _stageModel;
     private UpgradeModel _upgradeModel;
     private WalletModel _walletModel;
@@ -18,6 +20,8 @@ public class GameStateModel
     public GameStateModel(
         RelicModel relicModel,
         SkillModel skillModel,
+        SkillCooldownModel skillCooldownModel,
+        SkillSlotModel skillSlotModel,
         StageModel stageModel,
         UpgradeModel upgradeModel,
         WalletModel walletModel
@@ -25,6 +29,8 @@ public class GameStateModel
     {
         _relicModel = relicModel;
         _skillModel = skillModel;
+        _skillCooldownModel = skillCooldownModel;
+        _skillSlotModel = skillSlotModel;
         _stageModel = stageModel;
         _upgradeModel = upgradeModel;
         _walletModel = walletModel;
@@ -33,6 +39,8 @@ public class GameStateModel
 
     public RelicModel RelicModel => _relicModel;
     public SkillModel SkillModel => _skillModel;
+    public SkillCooldownModel SkillCooldownModel => _skillCooldownModel;    // 현재는 DTO 변환 안함
+    public SkillSlotModel SkillSlotModel => _skillSlotModel;
     public StageModel StageModel => _stageModel;
     public UpgradeModel UpgradeModel => _upgradeModel;
     public WalletModel WalletModel => _walletModel;
@@ -48,16 +56,19 @@ public class GameStateModel
         var dto = new SaveDataDTO
         {
             LastSavedAtUnixMs = nowUnixMs,
-            StageDTO = new StageDTO(),
-            WalletDTO = new WalletDTO()
+            StageDTO = new(),
+            WalletDTO = new(),
+            SkillSlotDTO = new(),
         }.Normalized();
 
         // Stage
         FillStages(dto.StageDTO, _stageModel.CurrentStage);
-        
 
         // Wallet
         FillCurrencies(dto.WalletDTO.Currencies, _walletModel.Values);
+
+        // Skill Slots
+        FillSkillSlots(_skillSlotModel, dto.SkillSlotDTO);
 
         // Levels
         FillLevels(dto.RelicLevels, _relicModel.RelicLevels);
@@ -68,8 +79,10 @@ public class GameStateModel
     }
 
     // DTO to Model
-    public void ApplyToClient(SaveDataDTO dto)
+    public void ApplyToClient(SaveDataDTO dto, out bool generated)
     {
+        generated = false;
+
         if (dto == null)
         {
             this.PrintLog("dto가 null입니다.", CurrentCategory, LogType.Error);
@@ -88,6 +101,9 @@ public class GameStateModel
         ApplyLevels(_relicModel, dto.RelicLevels);
         ApplyLevels(_upgradeModel, dto.UpgradeLevels);
         ApplyLevels(_skillModel, dto.SkillLevels);
+
+        // Skill slots
+        EnsureSkillSlots(_skillSlotModel, dto.SkillSlotDTO, out generated);
     }
 
     #endregion
@@ -109,6 +125,29 @@ public class GameStateModel
         }
     }
 
+    private static void FillSkillSlots(SkillSlotModel model, SkillSlotDTO dst)
+    {
+        // Equipped
+        if (dst.Equipped == null || dst.Equipped.Length != SkillSlotModel.EquippedSlotCount)
+        {
+            dst.Equipped = new int[SkillSlotModel.EquippedSlotCount];
+        }
+
+        for (int i = 0; i < SkillSlotModel.EquippedSlotCount; i++)
+        {
+            dst.Equipped[i] = model.GetEquipped(i);
+        }
+
+        // Inventory
+        dst.Inventory ??= new();
+        dst.Inventory.Clear();
+        for (int i = 0; i < model.Inventory.Count; i++)
+        {
+            dst.Inventory.Add(model.Inventory[i]);
+        }
+    }
+
+
     private static void FillLevels(Dictionary<string, int> dst, IReadOnlyDictionary<int, int> src)
     {
         dst.Clear();
@@ -117,8 +156,6 @@ public class GameStateModel
             dst[kv.Key.ToString()] = kv.Value;
         }
     }
-
-
 
     private static void ApplyStage(StageModel stageModel, StageDTO stageDto)
     {
@@ -151,6 +188,46 @@ public class GameStateModel
 
             walletModel.Set(currency, new BigNumber(bnDto.Mantissa, bnDto.Exponent));
         }
+    }
+
+    private void EnsureSkillSlots(SkillSlotModel skillSlotModel, SkillSlotDTO slotDto, out bool generated)
+    {
+        // 1. 슬롯이 있으면 그대로 적용
+        if (slotDto != null && slotDto.Inventory != null && slotDto.Inventory.Count > 0)
+        {
+            _skillSlotModel.ApplySnapshot(slotDto.Equipped, slotDto.Inventory);
+            generated = false;
+            return;
+        }
+
+        // 2. 슬롯이 없으면 SkillModel 기반으로 생성
+        List<int> owned = BuildOwnedSkillsFromSkillModel(_skillModel);
+
+        int[] equipped = new int[SkillSlotModel.EquippedSlotCount];
+        for (int i = 0; i < equipped.Length; i++)
+        {
+            equipped[i] = SkillId.None;
+        }
+
+        generated = true;
+        _skillSlotModel.SetInitial(owned, equipped);
+    }
+
+    private static List<int> BuildOwnedSkillsFromSkillModel(SkillModel skillModel)
+    {
+        var list = new List<int>();
+        foreach (var kv in skillModel.SkillLevels)
+        {
+            int id = kv.Key;
+            int level = kv.Value;
+
+            if (level <= 0) continue;
+            if (id == SkillId.None) continue;
+
+            list.Add(id);
+        }
+        list.Sort();
+        return list;
     }
 
     #endregion
