@@ -149,7 +149,7 @@ public class SkillService
         }
     }
 
-    public void ApplyActiveToDamage(ref DamageContext dmg, GameConfigSO config)
+    public void ApplyActiveToDamage(ref CalculatingDamageContext dmg, GameConfigSO config)
     {
         foreach (var kv in _skillModel.SkillLevels)
         {

@@ -4,5 +4,5 @@
 /// </summary>
 public interface IStatModifier
 {
-    void Modify(ref DamageContext damageContext);
+    void Modify(ref CalculatingDamageContext damageContext);
 }
