@@ -2,8 +2,8 @@
 
 public class UpgradeManager : IStatContributor
 {
-    private UpgradeService _upgradeService;
-    private GameConfigSO _gameConfigSO;
+    private readonly UpgradeService _upgradeService;
+    private readonly GameConfigSO _gameConfigSO;
     private PurchaseManager _purchaseManager;
     private ISaveMark _saveMark;
 
@@ -16,16 +16,19 @@ public class UpgradeManager : IStatContributor
 
     public UpgradeManager(
         UpgradeService upgradeService,
-        GameConfigSO gameConfigSO,
-        PurchaseManager purchaseManager,
-        ISaveMark saveMark
+        GameConfigSO gameConfigSO
         )
     {
         _upgradeService = upgradeService;
         _gameConfigSO = gameConfigSO;
+    }
+    public void Initialize(ISaveMark saveMark, PurchaseManager purchaseManager)
+    {
         _purchaseManager = purchaseManager;
         _saveMark = saveMark;
     }
+    public void Activate() { /* no op*/ }
+    public void Deactivate() { /* no op*/ }
 
     public int GetLevel(int upgradeId)
     {
