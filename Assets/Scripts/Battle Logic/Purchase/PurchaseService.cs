@@ -17,8 +17,7 @@ public class PurchaseService
 
     public bool CanPay(in Cost cost)
     {
-        // TODO: 할인, 배수 등 정책 추가
-        return _walletService.CanAfford(cost.Currency, cost.Amount);
+        return _walletService.CanPay(cost.Currency, cost.Amount);
     }
 
     public PurchaseResult TryPay(in Cost cost)
