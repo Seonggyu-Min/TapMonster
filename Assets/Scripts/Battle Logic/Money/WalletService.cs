@@ -1,4 +1,7 @@
-﻿public enum SpendResult
+﻿using System;
+using UnityEngine;
+
+public enum SpendResult
 {
     Success,
     NotEnough,
@@ -8,6 +11,15 @@
 public class WalletService
 {
     private WalletModel _walletModel;
+
+    private const LogCategory CurrentCategory = LogCategory.GameLogic;
+
+
+    public event Action<CurrencyId, BigNumber> OnCurrencyChanged
+    {
+        add => _walletModel.OnCurrencyChanged += value;
+        remove => _walletModel.OnCurrencyChanged -= value;
+    }
 
     public WalletService(WalletModel walletModel)
     {
@@ -33,6 +45,15 @@ public class WalletService
         return SpendResult.Success;
     }
 
-    public bool CanAfford(CurrencyId id, BigNumber cost)
-        => cost.Mantissa > 0 && _walletModel.Get(id) >= cost;
+    public bool CanPay(CurrencyId id, BigNumber cost)
+    {
+        // 디버그용
+        this.PrintLog($"cost.Mantissa >= 0 ? {cost.Mantissa >= 0} / " +
+            $"_walletModel.Get(id) >= cost ? {_walletModel.Get(id) >= cost} / " +
+            $"Current Balance: {BigNumberFormatter.ToString(_walletModel.Get(id))} / " +
+            $"CurrencyId: {id} / " +
+            $"Cost: {BigNumberFormatter.ToString(cost)}", CurrentCategory, LogType.Log);
+
+        return cost.Mantissa >= 0 && _walletModel.Get(id) >= cost;
+    }
 }

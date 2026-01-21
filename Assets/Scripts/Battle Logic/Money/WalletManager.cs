@@ -5,7 +5,11 @@ public class WalletManager
     private readonly ISaveMark _saveMark;
     private WalletService _walletService;
 
-    public event Action<CurrencyId, BigNumber> OnCurrencyChanged;   // UI에서 구독 필요없으면 없애도 될 듯
+    public event Action<CurrencyId, BigNumber> OnCurrencyChanged
+    {
+        add => _walletService.OnCurrencyChanged += value;
+        remove => _walletService.OnCurrencyChanged -= value;
+    }
 
     public WalletManager(WalletService walletService, ISaveMark saveMark)
     {
@@ -18,7 +22,6 @@ public class WalletManager
     public void Earn(CurrencyId id, BigNumber amount, bool requestSave = true)
     {
         _walletService.Earn(id, amount);
-        OnCurrencyChanged?.Invoke(id, _walletService.Get(id));
 
         if (requestSave)
         {
@@ -27,5 +30,5 @@ public class WalletManager
         }
     }
 
-    public bool CanAfford(CurrencyId id, BigNumber cost) => _walletService.CanAfford(id, cost);
+    public bool CanAfford(CurrencyId id, BigNumber cost) => _walletService.CanPay(id, cost);
 }
