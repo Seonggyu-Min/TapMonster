@@ -9,4 +9,9 @@
         Currency = currency;
         Amount = amount;
     }
+
+    public override string ToString()
+    {
+        return $"Currency: {Currency.ToString()} / Amount: {BigNumberFormatter.ToString(Amount)}"; 
+    }
 }
