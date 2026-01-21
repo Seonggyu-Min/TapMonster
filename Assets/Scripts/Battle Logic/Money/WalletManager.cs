@@ -2,7 +2,7 @@
 
 public class WalletManager
 {
-    private readonly ISaveMark _saveMark;
+    private ISaveMark _saveMark;
     private WalletService _walletService;
 
     public event Action<CurrencyId, BigNumber> OnCurrencyChanged
@@ -11,11 +11,16 @@ public class WalletManager
         remove => _walletService.OnCurrencyChanged -= value;
     }
 
-    public WalletManager(WalletService walletService, ISaveMark saveMark)
+    public WalletManager(WalletService walletService)
     {
         _walletService = walletService;
+    }
+    public void Initialize(ISaveMark saveMark)
+    {
         _saveMark = saveMark;
     }
+    public void Activate() { /* no op*/ }
+    public void Deactivate() { /* no op*/ }
 
     public BigNumber Get(CurrencyId id) => _walletService.Get(id);
 

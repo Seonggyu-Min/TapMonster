@@ -40,6 +40,10 @@ public class SaveLoadManager : ISaveMark
         _saveDebounceSeconds = saveDebounceSeconds;
         _maxSaveIntervalSeconds = maxSaveIntervalSeconds;
     }
+    public void Initialize() { /* no op*/ }
+    public void Activate() { /* no op*/ }
+    public void Deactivate() { /* no op*/ }
+
 
     public async UniTask LoadAllAsync(CancellationToken ct)
     {

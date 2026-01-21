@@ -1,26 +1,28 @@
 ﻿public class RelicManager : IStatContributor
 {
-    private RelicService _relicService;
-    private RelicGachaService _relicGachaService;
-    private GameConfigSO _gameConfigSO;
+    private readonly RelicService _relicService;
+    private readonly RelicGachaService _relicGachaService;
+    private readonly GameConfigSO _gameConfigSO;
     private PurchaseManager _purchaseManager;
     private ISaveMark _saveMark;
 
     public RelicManager(
         RelicService relicService,
         RelicGachaService relicGachaService,
-        GameConfigSO gameConfigSO,
-        PurchaseManager purchaseManager,
-        ISaveMark saveMark
+        GameConfigSO gameConfigSO
         )
     {
         _relicService = relicService;
         _relicGachaService = relicGachaService;
         _gameConfigSO = gameConfigSO;
-        _purchaseManager = purchaseManager;
-        _saveMark = saveMark;
     }
-
+    public void Initialize(ISaveMark saveMark, PurchaseManager purchaseManager)
+    {
+        _saveMark = saveMark;
+        _purchaseManager = purchaseManager;
+    }
+    public void Activate() { /* no op*/ }
+    public void Deactivate() { /* no op*/ }
 
 
     public void TryGachaOnce()

@@ -5,8 +5,8 @@ using UnityEngine;
 
 public class SkillManager : IStatContributor, IStatModifier
 {
-    private SkillService _skillService;
-    private GameConfigSO _gameConfigSO;
+    private readonly SkillService _skillService;
+    private readonly GameConfigSO _gameConfigSO;
     private PurchaseManager _purchaseManager;
     private ISaveMark _saveMark;
 
@@ -43,16 +43,19 @@ public class SkillManager : IStatContributor, IStatModifier
 
     public SkillManager(
         SkillService skillService,
-        GameConfigSO gameConfigSO,
-        PurchaseManager purchaseManager,
-        ISaveMark saveMark
+        GameConfigSO gameConfigSO
         )
     {
         _skillService = skillService;
         _gameConfigSO = gameConfigSO;
+    }
+    public void Initialize(ISaveMark saveMark, PurchaseManager purchaseManager)
+    {
         _purchaseManager = purchaseManager;
         _saveMark = saveMark;
     }
+    public void Activate() { /* no op*/ }
+    public void Deactivate() { /* no op*/ }
 
 
     public int GetLevel(int skillId)
@@ -119,7 +122,7 @@ public class SkillManager : IStatContributor, IStatModifier
         _skillService.ApplyPassiveToStat(ref buildContext, _gameConfigSO);
     }
 
-    public void Modify(ref DamageContext damageContext)
+    public void Modify(ref CalculatingDamageContext damageContext)
     {
         _skillService.ApplyActiveToDamage(ref damageContext, _gameConfigSO);
     }

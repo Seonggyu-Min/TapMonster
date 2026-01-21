@@ -1,18 +1,23 @@
 ﻿public class StatManager
 {
-    private StatBuilderService _statBuilderService;
+    private readonly StatBuilderService _statBuilderService;
+    private readonly GameConfigSO _gameConfigSO;
     private IStatContributor[] _statContributors;
-    private GameConfigSO _gameConfigSO;
 
     private bool _dirty = true;
     private PlayerStatSnapshot _cached;
 
-    public StatManager(StatBuilderService statBuilderService, IStatContributor[] statContributors, GameConfigSO gameConfigSO)
+    public StatManager(StatBuilderService statBuilderService, GameConfigSO gameConfigSO)
     {
         _statBuilderService = statBuilderService;
-        _statContributors = statContributors;
         _gameConfigSO = gameConfigSO;
     }
+    public void Initialize(IStatContributor[] statContributors)
+    {
+        _statContributors = statContributors;
+    }
+    public void Activate() { /* no op*/ }
+    public void Deactivate() { /* no op*/ }
 
     public void MarkDirty()
     {
