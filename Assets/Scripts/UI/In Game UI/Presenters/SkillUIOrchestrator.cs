@@ -2,6 +2,7 @@
 
 
 // TODO: 슬롯 동적 변경
+// MB가 아니어도 괜찮을 듯 Composer가 통일하게 관리하니까
 public class SkillUIOrchestrator : MonoBehaviour
 {
     #region Fields and Properties and Constructor
