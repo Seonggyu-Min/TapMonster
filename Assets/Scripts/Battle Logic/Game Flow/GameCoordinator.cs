@@ -7,6 +7,10 @@ public class GameCoordinator : MonoBehaviour
 {
     [SerializeField] private InputManager _inputManager;
 
+    [Header("Debug")]
+    [SerializeField] private CombatDebugInput _combatDebugInput;
+    [SerializeField] private MonsterSpawner _monsterSpawner;
+
     private GameContext _gameContext;
     private bool _initialized;
 
@@ -19,6 +23,10 @@ public class GameCoordinator : MonoBehaviour
 
         HandleSubscribe();
         _initialized = true;
+
+        // 디버그용
+        _combatDebugInput.Init(_gameContext);
+        _monsterSpawner.SpawnAndBind(_gameContext);
     }
 
 
