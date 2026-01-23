@@ -74,9 +74,8 @@ public readonly struct DamageRequest
     public readonly TargetType TargetType;
 
     // 스킬 데미지를 어떤 방식으로 만들지(임시)
-    // 예: manualFinal 기반 배율
-    public readonly float SkillMulPerLevel; // level당 증가치 (예: 0.1 = +10%)
-    public readonly bool CanCriticalOverride; // 스킬은 크리 금지 같은 옵션
+    public readonly float SkillMulPerLevel; // TODO: level당 증가치 config에서 받기
+    public readonly bool CanCriticalOverride; // TODO: 스킬의 크리 관련 설정
 
     public DamageRequest(
         DamageSource source,
@@ -96,24 +95,71 @@ public readonly struct DamageRequest
 }
 
 
+public enum DamageFailReason
+{
+    None,   // 성공
+    NoTarget,
+    SkillBlocked,
+    TargetDead
+}
 /// <summary>
 /// 공격 1회의 결과를 담는 구조체입니다.
 /// 이를 통해 데미지 결과를 한 번에 전달할 수 있습니다.
 /// </summary>
 public readonly struct DamageResult
 {
+    public readonly bool IsSuccess;
+    public readonly DamageFailReason FailReason;
+    public readonly SkillUseResult? SkillFailReason;
+
     public readonly DamageSource Source;
     public readonly int SkillId;
+
     public readonly bool IsCritical;
-    public readonly BigNumber FinalDamage;
+
+    public readonly BigNumber CalculatedDamage;
+    public readonly BigNumber AppliedDamage;
+
     public readonly bool TargetDied;
 
-    public DamageResult(DamageSource source, int skillId, bool isCritical, BigNumber finalDamage, bool targetDied)
+    public DamageResult(
+        bool isSuccess,
+        DamageFailReason failReason,
+        SkillUseResult? skillFailReason,
+        DamageSource source,
+        int skillId,
+        bool isCritical,
+        BigNumber calculatedDamage,
+        BigNumber appliedDamage,
+        bool targetDied)
     {
+        IsSuccess = isSuccess;
+        FailReason = failReason;
+        SkillFailReason = skillFailReason;
+
         Source = source;
         SkillId = skillId;
         IsCritical = isCritical;
-        FinalDamage = finalDamage;
+
+        CalculatedDamage = calculatedDamage;
+        AppliedDamage = appliedDamage;
         TargetDied = targetDied;
+    }
+}
+
+/// <summary>
+/// 계산에 활용하기 위한 순수 계산 결과와 크리티컬 여부만 담는 경량형 DamageResult 구조체입니다.
+/// 실제 타겟에 적용한 데미지와 다를 수 있습니다.
+/// (현재는 현재체력을 넘지 않게 clamp 보정)
+/// </summary>
+public readonly struct DamageResultPreview
+{
+    public readonly bool IsCritical;
+    public readonly BigNumber CalculatedDamage;
+
+    public DamageResultPreview(bool isCritical, BigNumber calculatedDamage)
+    {
+        IsCritical = isCritical;
+        CalculatedDamage = calculatedDamage;
     }
 }
