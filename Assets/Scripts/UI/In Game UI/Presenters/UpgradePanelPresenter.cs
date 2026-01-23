@@ -12,6 +12,7 @@ public class UpgradePanelPresenter : IDisposable
     private Dictionary<int, UpgradeConfigSO.UpgradeDef> _defById = new();
     private List<int> _orderedIds = new();
 
+    private bool _active;
 
     public UpgradePanelPresenter(
         UpgradePanelView view,
@@ -27,9 +28,12 @@ public class UpgradePanelPresenter : IDisposable
         _walletManager = walletManager;
         _purchaseManager = purchaseManager;
     }
-
-    public void Initialize()
+    public void Initialize() { /*no op*/ }
+    public void Activate()
     {
+        if (_active) return;
+        _active = true;
+
         // 캐시 및 순서 빌드
         _defById.Clear();
         _orderedIds.Clear();
@@ -57,6 +61,9 @@ public class UpgradePanelPresenter : IDisposable
 
     public void Dispose()
     {
+        if (!_active) return;
+        _active = false;
+
         _view.OnItemClicked -= HandleUpgradeItemClicked;
         _view.OnOpened -= HandleOpened;
         _view.OnClosed -= HandleClosed;

@@ -12,7 +12,7 @@ public class SkillPanelPresenter : IDisposable
     private Dictionary<int, SkillConfigSO.SkillDef> _defById = new();
     private List<int> _orderedIds = new();
 
-
+    private bool _active;
     public SkillPanelPresenter(
         SkillPanelView view,
         IReadOnlyList<SkillConfigSO.SkillDef> defs,
@@ -27,9 +27,12 @@ public class SkillPanelPresenter : IDisposable
         _walletManager = walletManager;
         _purchaseManager = purchaseManager;
     }
-
-    public void Initialize()
+    public void Initialize() { /*no op*/ }
+    public void Activate()
     {
+        if (_active) return;
+        _active = true;
+
         // 캐시 및 순서 빌드
         _defById.Clear();
         _orderedIds.Clear();
@@ -58,6 +61,9 @@ public class SkillPanelPresenter : IDisposable
 
     public void Dispose()
     {
+        if (!_active) return;
+        _active = false;
+
         _view.OnItemClicked -= HandleSkillItemClicked;
 
         _skillManager.OnSkillLevelChanged -= HandleLevelChanged;

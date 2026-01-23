@@ -8,6 +8,7 @@ public class SkillLoadoutPresenter : IDisposable
     private SkillLoadoutItemView[] _views;
 
     private float _now;
+    private bool _active;
 
 
     public SkillLoadoutPresenter(
@@ -20,9 +21,12 @@ public class SkillLoadoutPresenter : IDisposable
         _skillConfigSO = skillConfigSO;
         _views = views;
     }
-
-    public void Initialize()
+    public void Initialize() { /*no op*/ }
+    public void Activate()
     {
+        if (_active) return;
+        _active = true;
+
         _skillManager.OnSkillUsed += OnSkillUsed;
         _skillManager.OnSkillSlotChangeEvent += OnSkillSlotChanged;
 
@@ -34,9 +38,11 @@ public class SkillLoadoutPresenter : IDisposable
 
         RefreshAllEquipped();
     }
-
     public void Dispose()
     {
+        if (!_active) return;
+        _active = false;
+
         _skillManager.OnSkillUsed -= OnSkillUsed;
         _skillManager.OnSkillSlotChangeEvent -= OnSkillSlotChanged;
 

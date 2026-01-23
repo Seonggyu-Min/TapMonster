@@ -14,6 +14,8 @@ public class SkillUIOrchestrator : MonoBehaviour
     private SaveLoadManager _saveLoadManager;
     private SkillConfigSO _skillConfigSO;
 
+    private bool _active;
+
     #endregion
 
 
@@ -21,6 +23,9 @@ public class SkillUIOrchestrator : MonoBehaviour
 
     private void OnDestroy()
     {
+        if (!_active) return;
+        _active = false;
+
         if (_skillManager != null)
         {
             _skillManager.OnSkillSlotChanged -= OnModelChanged;
@@ -32,7 +37,7 @@ public class SkillUIOrchestrator : MonoBehaviour
 
     #region Public Methods
 
-    public void Init(
+    public void Initialize(
         SkillConfigSO skillConfigSO,
         SkillManager skillManager,
         SaveLoadManager saveLoadManager
@@ -41,6 +46,11 @@ public class SkillUIOrchestrator : MonoBehaviour
         _skillConfigSO = skillConfigSO;
         _skillManager = skillManager;
         _saveLoadManager = saveLoadManager;
+    }
+    public void Activate()
+    {
+        if (_active) return;
+        _active = true;
 
         if (_skillManager != null)
         {
@@ -159,33 +169,6 @@ public class SkillUIOrchestrator : MonoBehaviour
     #region Private Methods
 
     private void OnModelChanged(SkillSlotChangeKind kind) => RefreshAll();
-
-    // 테스트용 초기화, DTO 받아서 초기화해야 됨
-    //private void TestSetInitial()
-    //{
-    //    _model = new();
-
-    //    _model.SetInitial(
-    //        inventory: new List<int>
-    //        {
-    //            20001,
-    //            20002,
-    //            20003,
-    //            SkillId.None,
-    //            SkillId.None,
-    //            SkillId.None
-    //        },
-    //        equipped: new int[]
-    //        {
-    //            20001,
-    //            SkillId.None,
-    //            SkillId.None,
-    //            SkillId.None,
-    //            SkillId.None,
-    //            SkillId.None
-    //        }
-    //    );
-    //}
 
     private void InitAllSlots()
     {
