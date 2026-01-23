@@ -36,6 +36,7 @@ public enum DamageSource
 }
 public enum TargetType
 {
+    None,
     Normal,
     Boss,
 }
