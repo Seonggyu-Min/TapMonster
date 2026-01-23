@@ -3,6 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
+/// <summary>
+/// 스킬 사용, 레벨 조회, 쿨다운 등을 관리합니다.
+/// 직접 호출하여 스킬을 사용하지 않고, 입력은 CombatManager가 관리합니다.
+/// </summary>
 public class SkillManager : IStatContributor, IStatModifier
 {
     private readonly SkillService _skillService;
