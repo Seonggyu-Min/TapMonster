@@ -11,6 +11,7 @@ public class SaveDataDTO
     public StageDTO StageDTO = new();
     public WalletDTO WalletDTO = new();
     public SkillSlotDTO SkillSlotDTO = new();
+    public MonsterHpDTO MonsterHpDTO = new();
 
     public Dictionary<string, int> RelicLevels = new();
     public Dictionary<string, int> UpgradeLevels = new();
@@ -37,6 +38,15 @@ public class SkillSlotDTO
 {
     public int[] Equipped = new int[SkillSlotModel.EquippedSlotCount];
     public List<int> Inventory = new();
+}
+
+
+[Serializable]
+public class MonsterHpDTO
+{
+    public BigNumberDTO MaxHp = new();
+    public BigNumberDTO CurrentHp = new();
+    public bool HasValue = false; // 저장된 값이 있는지 (초기 세이브 대응용)
 }
 
 
