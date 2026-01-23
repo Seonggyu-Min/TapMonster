@@ -2,41 +2,39 @@
 
 public class CombatService
 {
-    private readonly float _criticalMultiplier; // 크리 배수(임시: 2.0)
+    private readonly float _criticalMultiplier; // 크리티컬 데미지 배수: 임시로 2.0f
 
     public CombatService(float criticalMultiplier = 2.0f)
     {
         _criticalMultiplier = Mathf.Max(0f, criticalMultiplier);
     }
 
-    public DamageResult ResolveHit(
-        in PlayerStatSnapshot snapshot,
-        in DamageRequest req,
-        IStatModifier[] modifiers,
-        IDamageable target)
-    {
-        if (target == null || target.IsDead)
-            return new DamageResult(req.Source, req.SkillId, false, BigNumber.Zero, true);
 
-        // 1) 기본 DamageContext 생성 (Snapshot 기반)
+    public DamageResultPreview ResolveDamageOnly(
+        PlayerStatSnapshot snapshot,
+        DamageRequest req,
+        IStatModifier[] modifiers
+        )
+    {
+        // 1. Snapshot 기반 DamageContext 생성
         CalculatingDamageContext ctx = CreateBaseContext(snapshot, req);
 
-        // 2) Modifier 체인 적용 (스킬, 보스패턴, 버프 등)
+        // 2. Modifier 순회 적용
         if (modifiers != null)
         {
             for (int i = 0; i < modifiers.Length; i++)
-                modifiers[i]?.Modify(ref ctx); // :contentReference[oaicite:5]{index=5}
+            {
+                modifiers[i]?.Modify(ref ctx);
+            }
         }
 
-        // 3) 크리 판정 + 최종 데미지 정산
+        // 3. 크리티컬 판정
         bool isCrit = RollCritical(ctx.CanCritical, ctx.CriticalChance);
-        BigNumber finalDamage = SettleFinalDamage(ref ctx, isCrit);
 
-        // 4) 타겟 적용
-        BigNumber applied = target.ApplyDamage(finalDamage);
-        bool died = target.IsDead;
+        // 4. 최종 데미지 정산
+        BigNumber calculated = SettleFinalDamage(ref ctx, isCrit);
 
-        return new DamageResult(req.Source, req.SkillId, isCrit, applied, died);
+        return new DamageResultPreview(isCrit, calculated);
     }
 
     private CalculatingDamageContext CreateBaseContext(in PlayerStatSnapshot snap, in DamageRequest req)
@@ -50,7 +48,7 @@ public class CombatService
         ctx.AdditiveDamagePercent = 0f;
         ctx.DamageMultiplier = 1f;
 
-        // 기본 크리 가능
+        // 기본 크리 가능 여부
         ctx.CanCritical = req.CanCriticalOverride;
 
         // Source별 기본 데미지/크리확률 세팅
@@ -68,12 +66,13 @@ public class CombatService
 
             case DamageSource.Skill:
             default:
-                // 스킬 데미지: manualFinal 기반 배율(임시 공식)
+                // 스킬 데미지: manualFinal 기반 배율
+                // TODO: 배율 설정 config
                 int lv = Mathf.Max(0, req.SkillLevel);
                 float mul = 1f + (Mathf.Max(0f, req.SkillMulPerLevel) * lv);
 
                 ctx.Damage = snap.ManualFinalDamage * mul;
-                ctx.CriticalChance = snap.ManualCriticalChance; // 원하면 스킬용 따로 분리 가능
+                ctx.CriticalChance = snap.ManualCriticalChance; // TODO: 스킬용 따로 분리
                 break;
         }
 
@@ -92,8 +91,6 @@ public class CombatService
 
     private BigNumber SettleFinalDamage(ref CalculatingDamageContext ctx, bool isCritical)
     {
-        // ctx.Damage는 이미 snapshot 기반 기본값이고,
-        // modifiers는 AdditiveDamagePercent / DamageMultiplier 등을 건드릴 수 있음.
         float add = Mathf.Max(0f, ctx.AdditiveDamagePercent);
         float mul = Mathf.Max(0f, ctx.DamageMultiplier);
 
