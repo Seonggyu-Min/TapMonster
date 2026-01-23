@@ -1,5 +1,4 @@
 ﻿using Cysharp.Threading.Tasks;
-using System;
 using System.Threading;
 using UnityEngine;
 
@@ -18,6 +17,7 @@ public class GameBootstrapper : MonoBehaviour
 
     // Models
     private StageModel _stageModel;
+    private MonsterHpModel _monsterHpModel;
     private RelicModel _relicModel;
     private UpgradeModel _upgradeModel;
     private SkillModel _skillModel;
@@ -33,7 +33,8 @@ public class GameBootstrapper : MonoBehaviour
     private StatBuilderService _statBuilderService;
 
     private StageProgressService _stageProgressService;
-    private StageHpService _stageHpService;
+    private StageMaxHpService _stageMaxHpService;
+    private MonsterHpService _monsterHpService;
 
     private RelicService _relicService;
     private RelicGachaService _relicGachaService;
@@ -70,7 +71,6 @@ public class GameBootstrapper : MonoBehaviour
     {
         BuildContext();
         _coordinator.Init(_gameContext);
-
         StartGameAsync(this.GetCancellationTokenOnDestroy()).Forget();
     }
 
@@ -84,6 +84,7 @@ public class GameBootstrapper : MonoBehaviour
     private async UniTaskVoid StartGameAsync(CancellationToken ct)
     {
         await _gameContext.SaveLoadManager.LoadAllAsync(ct);
+        _coordinator.Activate();
         ActivateManagers();
     }
 
@@ -119,6 +120,7 @@ public class GameBootstrapper : MonoBehaviour
     private void ConstructModels()
     {
         _stageModel = new();
+        _monsterHpModel = new();
         _relicModel = new();
         _upgradeModel = new();
         _skillModel = new();
@@ -132,6 +134,7 @@ public class GameBootstrapper : MonoBehaviour
             skillCooldownModel: _skillCooldownModel,
             skillSlotModel: _skillSlotModel,
             stageModel: _stageModel,
+            monsterHpModel: _monsterHpModel,
             upgradeModel: _upgradeModel,
             walletModel: _walletModel
         );
@@ -145,7 +148,8 @@ public class GameBootstrapper : MonoBehaviour
         _statBuilderService = new();
 
         _stageProgressService = new(_gameStateModel.StageModel);
-        _stageHpService = new(_gameConfigSO.StageConfigSO);
+        _stageMaxHpService = new(_gameConfigSO.StageConfigSO);
+        _monsterHpService = new(_monsterHpModel);
 
         _relicService = new(_gameStateModel.RelicModel);
         _relicGachaService = new(_gameStateModel.RelicModel, _gameConfigSO);
@@ -180,7 +184,7 @@ public class GameBootstrapper : MonoBehaviour
         _saveMark = _saveLoadManager;
 
         _purchaseManager = new(_purchaseService);
-        _stageManager = new(_stageProgressService, _stageHpService);
+        _stageManager = new(_stageProgressService, _stageMaxHpService, _monsterHpService);
         _relicManager = new(_relicService, _relicGachaService, _gameConfigSO);
         _upgradeManager = new(_upgradeService, _gameConfigSO);
         _skillManager = new(_skillService, _gameConfigSO);
