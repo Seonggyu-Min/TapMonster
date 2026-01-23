@@ -1,21 +1,44 @@
 ﻿using System;
 
-public class StageManager
+public class StageManager : ITargetProvider
 {
     private readonly StageProgressService _stageProgressService;
-    private readonly StageHpService _stageHpService;
-
+    private readonly StageMaxHpService _stageMaxHpService;
+    private MonsterHpService _monsterHpService;
     private ISaveMark _saveMark;
+    
+    private NormalMonster _enemyView;
 
-    public event Action<int> OnStageChanged;
+    private const LogCategory CurrentCategory = LogCategory.GameLogic;
+
+    public event Action<int> OnStageChanged
+    {
+        add => _stageProgressService.OnStageChanged += value;
+        remove => _stageProgressService.OnStageChanged -= value;
+    }
+    public event Action<BigNumber> OnDamaged
+    {
+        add => _monsterHpService.OnDamaged += value;
+        remove => _monsterHpService.OnDamaged -= value;
+    }
+    public event Action OnDied
+    {
+        add => _monsterHpService.OnDied += value;
+        remove => _monsterHpService.OnDied -= value;
+    }
+    public event Action OnTargetChanged;
+
+
 
     public StageManager(
         StageProgressService stageProgressService,
-        StageHpService stageHpService
+        StageMaxHpService stageHpService,
+        MonsterHpService monsterHpService
         )
     {
         _stageProgressService = stageProgressService;
-        _stageHpService = stageHpService;
+        _stageMaxHpService = stageHpService;
+        _monsterHpService = monsterHpService;
     }
     public void Initialize(ISaveMark saveMark)
     {
@@ -23,43 +46,79 @@ public class StageManager
     }
     public void Activate()
     {
-        _stageHpService.OnMonsterDefeated += HandleMonsterDefeated;
+        _monsterHpService.OnDied += HandleMonsterDefeated;
+        _monsterHpService.OnDamaged += HandleMonsterDamaged;
     }
     public void Deactivate()
     {
-        if (_stageHpService != null)
-        {
-            _stageHpService.OnMonsterDefeated -= HandleMonsterDefeated;
-        }
+        _monsterHpService.OnDied -= HandleMonsterDefeated;
+        _monsterHpService.OnDamaged -= HandleMonsterDamaged;
     }
-
 
 
     public int CurrentStage => _stageProgressService.CurrentStage;
+    public IDamageable CurrentTarget => _enemyView;
+    public TargetType CurrentTargetType
+        => _stageMaxHpService.IsBossStage(CurrentStage) ? TargetType.Boss : TargetType.Normal;
 
-    public IDamageable CurrentEnemy => _stageHpService.CurrentEnemy;
 
-    public void BindEnemy(IDamageable enemy) => _stageHpService.BindEnemy(enemy);
+    public BigNumber CurrentHp => _monsterHpService.CurrentHp;
+    public BigNumber MaxHp => _monsterHpService.MaxHp;
+    public bool HasLoadedValue => _monsterHpService.HasLoadedValue;
+    public bool IsDead => _monsterHpService.IsDead;
 
-    public void SpawnOrResetEnemy() => _stageHpService.SpawnOrResetForCurrentStage(_stageProgressService.CurrentStage);
 
-    public void OnMonsterDefeated()
+    public void BindEnemyView(NormalMonster enemyView)
     {
-        _stageProgressService.AdvanceStage();
+        _enemyView = enemyView;
+        if (_enemyView != null)
+        {
+            _enemyView.Bind(this);
+        }
 
-        _saveMark.MarkDirty(SaveDirtyFlags.Stage);
-        _saveMark.RequestSave();
+        OnTargetChanged?.Invoke();
+    }
 
-        OnStageChanged?.Invoke(_stageProgressService.CurrentStage);
+    // 스테이지 기준으로 모델 리셋
+    public void SpawnOrResetEnemy()
+    {
+        BigNumber maxHp = _stageMaxHpService.GetMonsterMaxHp(_stageProgressService.CurrentStage);
+
+        this.PrintLog($"SpawnOrResetEnemy stage={CurrentStage} " +
+            $"maxHp=({maxHp.Mantissa}, e{maxHp.Exponent})"
+            , CurrentCategory);
+
+        _monsterHpService.InitializeHp(maxHp);
+        OnTargetChanged?.Invoke();
+
+        _saveMark.MarkDirty(SaveDirtyFlags.MonsterHp);
     }
 
     public BigNumber GetMonsterHpForCurrentStage()
-        => _stageHpService.GetMonsterHp(_stageProgressService.CurrentStage);
-
+        => _stageMaxHpService.GetMonsterMaxHp(_stageProgressService.CurrentStage);
 
     private void HandleMonsterDefeated()
-    {
-        OnMonsterDefeated(); // 스테이지 진행/저장/이벤트
-        SpawnOrResetEnemy(); // 다음 스테이지 몬스터 스폰
+    {    
+        _stageProgressService.AdvanceStage();
+
+        _saveMark.MarkDirty(SaveDirtyFlags.MonsterHp);
+        _saveMark.MarkDirty(SaveDirtyFlags.Stage);
+        _saveMark.RequestSave();
+
+        SpawnOrResetEnemy();
     }
+    private void HandleMonsterDamaged(BigNumber applied)
+    {
+        _saveMark.MarkDirty(SaveDirtyFlags.MonsterHp);
+    }
+
+
+    public void SetHpSilently(BigNumber maxHp, BigNumber currentHp)
+        => _monsterHpService.SetHpSilently(maxHp, currentHp);
+    public void InitializeHp(BigNumber maxHp)
+        => _monsterHpService.InitializeHp(maxHp);
+    public BigNumber ApplyDamage(BigNumber finalDamage)
+        => _monsterHpService.ApplyDamage(finalDamage);
+    public void SetLoadedFlag(bool loaded)
+        => _monsterHpService.SetLoadedFlag(loaded);
 }
