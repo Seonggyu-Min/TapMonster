@@ -13,7 +13,8 @@ public enum SaveDirtyFlags
     Skill = 1 << 3,
     Wallet = 1 << 4,
     SkillSlots = 1 << 5,
-    All = Stage | Relic | Upgrade | Skill | Wallet | SkillSlots,
+    MonsterHp = 1 << 6,
+    All = Stage | Relic | Upgrade | Skill | Wallet | SkillSlots | MonsterHp,
 }
 
 
@@ -41,6 +42,9 @@ public class SavePatchBuilder
         if ((dirty & SaveDirtyFlags.SkillSlots) != 0)
             WriteSkillSlotsFromModel(updates, uid, gs.SkillSlotModel);
 
+        if ((dirty & SaveDirtyFlags.MonsterHp) != 0)
+            WriteMonsterHpFromModel(updates, uid, gs.MonsterHpModel);
+
         return updates;
     }
 
@@ -52,6 +56,9 @@ public class SavePatchBuilder
 
         // Stage
         updates[DBRoutes.CurrentStage(uid)] = dto.StageDTO?.CurrentStage ?? 1;
+
+        // Monster Hp
+        WriteMonsterHpFromDTO(updates, uid, dto.MonsterHpDTO);
 
         // Wallet
         if (dto.WalletDTO?.Currencies != null &&
@@ -136,5 +143,33 @@ public class SavePatchBuilder
                 invDict[i.ToString()] = slotDto.Inventory[i];
         }
         updates[DBRoutes.SkillSlotsInventory(uid)] = invDict;
+    }
+
+    private static void WriteMonsterHpFromModel(Dictionary<string, object> updates, string uid, MonsterHpModel model)
+    {
+        if (model == null) return;
+
+        updates[DBRoutes.MonsterHpHasValue(uid)] = true;
+
+        updates[DBRoutes.MonsterMaxHpMantissa(uid)] = model.MaxHp.Mantissa;
+        updates[DBRoutes.MonsterMaxHpExponent(uid)] = model.MaxHp.Exponent;
+
+        updates[DBRoutes.MonsterCurHpMantissa(uid)] = model.CurrentHp.Mantissa;
+        updates[DBRoutes.MonsterCurHpExponent(uid)] = model.CurrentHp.Exponent;
+    }
+
+    private static void WriteMonsterHpFromDTO(Dictionary<string, object> updates, string uid, MonsterHpDTO mhp)
+    {
+        bool has = mhp != null && mhp.HasValue && mhp.MaxHp != null && mhp.CurrentHp != null;
+        updates[DBRoutes.MonsterHpHasValue(uid)] = has;
+
+        BigNumberDTO max = mhp?.MaxHp;
+        BigNumberDTO cur = mhp?.CurrentHp;
+
+        updates[DBRoutes.MonsterMaxHpMantissa(uid)] = has ? max.Mantissa : 0d;
+        updates[DBRoutes.MonsterMaxHpExponent(uid)] = has ? max.Exponent : 0;
+
+        updates[DBRoutes.MonsterCurHpMantissa(uid)] = has ? cur.Mantissa : 0d;
+        updates[DBRoutes.MonsterCurHpExponent(uid)] = has ? cur.Exponent : 0;
     }
 }
