@@ -134,6 +134,7 @@ public class InGameUIComposer : MonoBehaviour
 
         _skillLoadoutPresenter = new(
             _gameContext.SkillManager,
+            _gameContext.CombatManager,
             _gameConfigSO.SkillConfigSO,
             _skillLoadoutItemViews
             );
