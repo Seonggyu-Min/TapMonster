@@ -46,9 +46,14 @@ public class DamageUIPresenter : IDisposable
 
     private void HandleHit(DamageResult r)
     {
+        if (!r.IsSuccess) return; // 실패한 공격이면 표시 안함
+        if (r.AppliedDamage <= BigNumber.Zero) return;
         if (_spawnPoint == null) return;
 
-        string text = BigNumberFormatter.ToString(r.FinalDamage);
+        // TODO: 크리티컬과 분리 혹은 스킬도
+        // if (r.IsCritical) / if (r.Source == DamageSource.Skill) 이거 쓰면 될 듯
+
+        string text = BigNumberFormatter.ToString(r.AppliedDamage);
         _spawner.Spawn(text, _spawnPoint);
     }
 }
