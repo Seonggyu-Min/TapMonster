@@ -9,6 +9,5 @@ public interface IDamageable
     event Action<BigNumber> OnDamaged; // 적용된 데미지
     event Action OnDied;
 
-    void Initialize(BigNumber maxHp);
     BigNumber ApplyDamage(BigNumber finalDamage);
 }
