@@ -5,10 +5,7 @@ using UnityEngine;
 
 public class GameCoordinator : MonoBehaviour
 {
-    [SerializeField] private InputManager _inputManager;
-
-    [Header("Debug")]
-    [SerializeField] private CombatDebugInput _combatDebugInput;
+    [Header("Spawn")]
     [SerializeField] private MonsterSpawner _monsterSpawner;
 
     private GameContext _gameContext;
@@ -20,19 +17,17 @@ public class GameCoordinator : MonoBehaviour
     public void Init(GameContext gameContext)
     {
         _gameContext = gameContext;
-
-        HandleSubscribe();
         _initialized = true;
-
-        // 디버그용
-        _combatDebugInput.Init(_gameContext);
-        _monsterSpawner.SpawnAndBind(_gameContext);
     }
 
+    public void Activate()
+    {
+        SpawnAndApplyLoadedHp();
+    }
 
     private void OnDestroy()
     {
-        HandleUnsubscribe();
+        
     }
 
     private void OnApplicationPause(bool pause)
@@ -42,35 +37,12 @@ public class GameCoordinator : MonoBehaviour
 
         ForceSaveOnExitAsync().Forget();
     }
-
     private void OnApplicationQuit()
     {
         if (!_initialized) return;
         ForceSaveOnExitAsync().Forget();
     }
 
-
-    private void HandleSubscribe()
-    {
-        if (!_initialized) return;
-        if (_inputManager == null) return;
-
-        _inputManager.OnManualAttack += HandleManualAttack;
-    }
-
-    private void HandleUnsubscribe()
-    {
-        if (_inputManager == null) return;
-
-        _inputManager.OnManualAttack -= HandleManualAttack;
-    }
-
-    private void HandleManualAttack()
-    {
-        this.PrintLog("탭 입력", CurrentCategory);
-        PlayerStatSnapshot snap = _gameContext.StatManager.GetOrBuildSnapshot();
-        this.PrintLog($"ManualDamage={snap.ManualFinalDamage.Mantissa}e{snap.ManualFinalDamage.Exponent}", CurrentCategory);
-    }
 
 #if UNITY_EDITOR
     [Button("테스트용 업그레이드")]
@@ -103,5 +75,11 @@ public class GameCoordinator : MonoBehaviour
     {
         CancellationToken ct = this.GetCancellationTokenOnDestroy();
         await _gameContext.SaveLoadManager.ForceSaveAsync(ct);
+    }
+
+    private void SpawnAndApplyLoadedHp()
+    {
+        bool hasHp = _gameContext.StageManager.HasLoadedValue;
+        _monsterSpawner.Spawn(_gameContext.StageManager, resetHp: !hasHp);
     }
 }
