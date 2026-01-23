@@ -1,4 +1,5 @@
 ﻿using System;
+using UnityEngine;
 
 public interface ITargetProvider
 {
@@ -14,7 +15,7 @@ public class CombatManager
 
     private StatManager _statManager;
     private SkillManager _skillManager;    // 스킬 레벨 조회용
-    private StageManager _stageManager;    // 필요할지는 모르겠는데 타겟 타입 조회해야될 수도?
+    private ITargetProvider _targetProvider;    // 타겟 전달
     private IStatModifier[] _modifiers;
 
     public event Action<DamageResult> OnHit;
@@ -27,45 +28,62 @@ public class CombatManager
     public void Initialize(
         StatManager statManager,
         SkillManager skillManager,
-        StageManager stageManager,
+        ITargetProvider targetProvider,
         IStatModifier[] modifiers
         )
     {
         _statManager = statManager;
         _skillManager = skillManager;
-        _stageManager = stageManager;
+        _targetProvider = targetProvider;
         _modifiers = modifiers;
     }
     public void Activate() { /* no op*/ }
     public void Deactivate() { /* no op*/ }
 
 
-    public DamageResult TryManual(IDamageable target, TargetType targetType = TargetType.Normal)
+    public DamageResult TryManual()
     {
-        PlayerStatSnapshot snap = _statManager.GetOrBuildSnapshot();
-        DamageRequest req = new DamageRequest(DamageSource.Manual, 0, 0, targetType);
+        Debug.Log("TryManual triggered.");
+        DamageRequest req = new(
+            source: DamageSource.Manual,
+            skillId: 0,
+            skillLevel: 0,
+            targetType: _targetProvider.CurrentTargetType
+            );
 
-        DamageResult r = _combatService.ResolveHit(snap, req, _modifiers, target);
+        DamageResult r = _combatService.ResolveHit(
+            snapshot: _statManager.GetOrBuildSnapshot(),
+            req: req,
+            modifiers: _modifiers,
+            target: _targetProvider.CurrentTarget
+            );
+
         OnHit?.Invoke(r);
         return r;
     }
 
-    public DamageResult TryAuto(IDamageable target, TargetType targetType = TargetType.Normal)
+    public DamageResult TryAuto()
     {
-        PlayerStatSnapshot snap = _statManager.GetOrBuildSnapshot();
-        DamageRequest req = new DamageRequest(DamageSource.Auto, 0, 0, targetType);
+        DamageRequest req = new DamageRequest(
+            source: DamageSource.Auto,
+            skillId: 0,
+            skillLevel: 0,
+            targetType: _targetProvider.CurrentTargetType
+            );
 
-        DamageResult r = _combatService.ResolveHit(snap, req, _modifiers, target);
+        DamageResult r = _combatService.ResolveHit(
+            snapshot: _statManager.GetOrBuildSnapshot(),
+            req: req,
+            modifiers: _modifiers,
+            target: _targetProvider.CurrentTarget
+            );
+
         OnHit?.Invoke(r);
         return r;
     }
 
-    public DamageResult TrySkill(IDamageable target, int skillId, TargetType targetType = TargetType.Normal)
+    public DamageResult TrySkill(int skillId)
     {
-        PlayerStatSnapshot snap = _statManager.GetOrBuildSnapshot();
-
-        int level = _skillManager.GetLevel(skillId);
-
         _skillConfigSO.TryGet(skillId, out var def);
 
         float perLevel = 0f;
@@ -81,12 +99,18 @@ public class CombatManager
         DamageRequest req = new DamageRequest(
             source: DamageSource.Skill,
             skillId: skillId,
-            skillLevel: level,
-            targetType: targetType,
+            skillLevel: _skillManager.GetLevel(skillId),
+            targetType: _targetProvider.CurrentTargetType,
             skillMulPerLevel: perLevel,
             canCriticalOverride: true);
 
-        DamageResult r = _combatService.ResolveHit(snap, req, _modifiers, target);
+        DamageResult r = _combatService.ResolveHit(
+            snapshot: _statManager.GetOrBuildSnapshot(),
+            req: req,
+            modifiers: _modifiers,
+            target: _targetProvider.CurrentTarget
+            );
+
         OnHit?.Invoke(r);
         return r;
     }
