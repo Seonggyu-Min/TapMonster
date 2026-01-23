@@ -45,4 +45,15 @@ public static class DBRoutes
     public static string Gold(string uid) => DBPathMaker.Join(DatabaseKeys.Users, uid, DatabaseKeys.SaveData, DatabaseKeys.Wallet, DatabaseKeys.Gold);
     public static string GoldMantissa(string uid) => DBPathMaker.Join(DatabaseKeys.Users, uid, DatabaseKeys.SaveData, DatabaseKeys.Wallet, DatabaseKeys.Gold, DatabaseKeys.Mantissa);
     public static string GoldExponent(string uid) => DBPathMaker.Join(DatabaseKeys.Users, uid, DatabaseKeys.SaveData, DatabaseKeys.Wallet, DatabaseKeys.Gold, DatabaseKeys.Exponent);
+
+
+    // - Monster Hp
+    public static string MonsterHp(string uid) => DBPathMaker.Join(SaveData(uid), DatabaseKeys.MonsterHp);
+    public static string MonsterMaxHpMantissa(string uid) => DBPathMaker.Join(MonsterHp(uid), DatabaseKeys.MaxHp, DatabaseKeys.Mantissa);
+    public static string MonsterMaxHpExponent(string uid) => DBPathMaker.Join(MonsterHp(uid), DatabaseKeys.MaxHp, DatabaseKeys.Exponent);
+    public static string MonsterCurHpMantissa(string uid) => DBPathMaker.Join(MonsterHp(uid), DatabaseKeys.CurrentHp, DatabaseKeys.Mantissa);
+    public static string MonsterCurHpExponent(string uid) => DBPathMaker.Join(MonsterHp(uid), DatabaseKeys.CurrentHp, DatabaseKeys.Exponent);
+    public static string MonsterHpHasValue(string uid) => DBPathMaker.Join(MonsterHp(uid), DatabaseKeys.HasValue);
+
+
 }

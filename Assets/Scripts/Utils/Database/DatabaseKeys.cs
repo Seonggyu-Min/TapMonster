@@ -38,4 +38,11 @@ public static class DatabaseKeys
     public const string Gold = "Gold";
     public const string Mantissa = "Mantissa";
     public const string Exponent = "Exponent";
+
+    // - Monster Hp
+    public const string MonsterHp = "MonsterHp";
+    public const string MaxHp = "MaxHp";
+    public const string CurrentHp = "CurrentHp";
+    public const string HasValue = "HasValue";
+
 }
