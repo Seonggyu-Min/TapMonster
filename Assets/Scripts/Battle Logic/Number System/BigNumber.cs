@@ -69,7 +69,7 @@ public struct BigNumber : IComparable<BigNumber>, IEquatable<BigNumber>
     #endregion
 
 
-    #region Operation and Comparision
+    #region Operation, Comparision, Math Helpers
 
     // IComparable
     public int CompareTo(BigNumber other)
@@ -132,6 +132,8 @@ public struct BigNumber : IComparable<BigNumber>, IEquatable<BigNumber>
         double scaledSmall = small.Mantissa / Math.Pow(10, diff);
         return new BigNumber(big.Mantissa - scaledSmall, big.Exponent);
     }
+
+    // Math Helpers
     public static BigNumber Pow(BigNumber value, double power)
     {
         if (value.Mantissa == 0) return Zero;
@@ -145,8 +147,33 @@ public struct BigNumber : IComparable<BigNumber>, IEquatable<BigNumber>
 
         return new BigNumber(newMan, newExp);
     }
+    public static float Ratio01(BigNumber cur, BigNumber max)
+    {
+        if (max.Mantissa == 0) return 0f;
+        if (cur.Mantissa == 0) return 0f;
+
+        if (cur >= max) return 1f;
+
+        int expDiff = cur.Exponent - max.Exponent;
+
+        // expDiff가 너무 작으면 0 처리
+        if (expDiff <= -50) return 0f;
+
+        // (curMan/maxMan) * 10^expDiff
+        double ratio = (cur.Mantissa / max.Mantissa) * Math.Pow(10.0, expDiff);
+
+        if (ratio <= 0) return 0f;
+        if (ratio >= 1) return 1f;
+        return (float)ratio;
+    }
     public static BigNumber Max(BigNumber a, BigNumber b) => a >= b ? a : b;
     public static BigNumber Min(BigNumber a, BigNumber b) => a <= b ? a : b;
+    public static BigNumber Clamp(BigNumber value, BigNumber min, BigNumber max)
+    {
+        if (value < min) return min;
+        if (value > max) return max;
+        return value;
+    }
 
     #endregion
 
