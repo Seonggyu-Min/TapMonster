@@ -16,6 +16,13 @@ public static class SaveDataDtoExtensions
         dto.UpgradeLevels ??= new();
         dto.SkillLevels ??= new();
 
+        dto.MonsterHpDTO ??= new();
+        dto.MonsterHpDTO.MaxHp ??= new();
+        dto.MonsterHpDTO.CurrentHp ??= new();
+
+        dto.SkillSlotDTO.Equipped ??= new int[SkillSlotModel.EquippedSlotCount];
+        dto.SkillSlotDTO.Inventory ??= new();
+
         return dto;
     }
 }
