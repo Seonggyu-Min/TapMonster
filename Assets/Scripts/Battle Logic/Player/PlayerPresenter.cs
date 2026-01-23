@@ -5,13 +5,13 @@ public class PlayerPresenter : IDisposable
 {
     private PlayerView _playerView;
     private SkillManager _skillManager;
-    private InputManager _inputManager;
+    private ManualInputPresenter _inputManager;
     
 
     public PlayerPresenter(
         PlayerView playerView,
         SkillManager skillManager,
-        InputManager inputManager
+        ManualInputPresenter inputManager
         )
     {
         _playerView = playerView;
