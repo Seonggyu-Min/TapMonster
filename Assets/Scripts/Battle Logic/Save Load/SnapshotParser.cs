@@ -1,4 +1,5 @@
 ﻿using Firebase.Database;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -24,6 +25,9 @@ public static class SnapshotParser
                 CurrentStage = (int)GetLong(stage, DatabaseKeys.CurrentStage, 1)
             };
         }
+
+        // Monster
+        dto.MonsterHpDTO = ReadMonsterHp(root);
 
         // Wallet
         dto.WalletDTO = new WalletDTO();
@@ -69,7 +73,41 @@ public static class SnapshotParser
         }
         return result;
     }
+    private static MonsterHpDTO ReadMonsterHp(Dictionary<string, object> root)
+    {
+        var result = new MonsterHpDTO();
 
+        if (!TryGetDict(root, DatabaseKeys.MonsterHp, out var mhpRoot))
+            return result;
+
+        // hasValue
+        result.HasValue = ToBool(
+            mhpRoot.TryGetValue(DatabaseKeys.HasValue, out var hv) ? 
+            hv : null, false
+            );
+
+        // maxHp
+        if (TryGetDict(mhpRoot, DatabaseKeys.MaxHp, out var maxDict))
+        {
+            result.MaxHp = new BigNumberDTO
+            {
+                Mantissa = GetDouble(maxDict, DatabaseKeys.Mantissa, 0),
+                Exponent = (int)GetLong(maxDict, DatabaseKeys.Exponent, 0)
+            };
+        }
+
+        // currentHp
+        if (TryGetDict(mhpRoot, DatabaseKeys.CurrentHp, out var curDict))
+        {
+            result.CurrentHp = new BigNumberDTO
+            {
+                Mantissa = GetDouble(curDict, DatabaseKeys.Mantissa, 0),
+                Exponent = (int)GetLong(curDict, DatabaseKeys.Exponent, 0)
+            };
+        }
+
+        return result;
+    }
     private static SkillSlotDTO ReadSkillSlots(Dictionary<string, object> root)
     {
         var result = new SkillSlotDTO();
@@ -140,6 +178,7 @@ public static class SnapshotParser
         return result;
     }
 
+
     private static bool TryGetDict(Dictionary<string, object> root, string key, out Dictionary<string, object> dict)
     {
         dict = null;
@@ -150,7 +189,6 @@ public static class SnapshotParser
         }
         return false;
     }
-
     private static bool TryGetMap(Dictionary<string, object> root, string key, out Dictionary<string, object> map)
     {
         map = null;
@@ -174,7 +212,6 @@ public static class SnapshotParser
 
         return false;
     }
-
     private static bool TryGetList(Dictionary<string, object> root, string key, out IList list)
     {
         list = null;
@@ -187,7 +224,6 @@ public static class SnapshotParser
         }
         return false;
     }
-
     private static bool TryGetMapFromSnapshot(DataSnapshot snapshot, out Dictionary<string, object> root)
     {
         root = null;
@@ -213,13 +249,10 @@ public static class SnapshotParser
 
         return false;
     }
-
     private static long GetLong(Dictionary<string, object> dict, string key, long def)
         => dict.TryGetValue(key, out var v) ? ToLong(v, def) : def;
-
     private static double GetDouble(Dictionary<string, object> dict, string key, double def)
         => dict.TryGetValue(key, out var v) ? ToDouble(v, def) : def;
-
     private static long ToLong(object v, long def)
     {
         if (v == null) return def;
@@ -229,7 +262,6 @@ public static class SnapshotParser
         if (long.TryParse(v.ToString(), out var p)) return p;
         return def;
     }
-
     private static double ToDouble(object v, double def)
     {
         if (v == null) return def;
@@ -237,6 +269,17 @@ public static class SnapshotParser
         if (v is long l) return l;
         if (v is int i) return i;
         if (double.TryParse(v.ToString(), out var p)) return p;
+        return def;
+    }
+    private static bool ToBool(object v, bool def)
+    {
+        if (v == null) return def;
+        if (v is bool b) return b;
+        if (v is long l) return l != 0;
+        if (v is int i) return i != 0;
+        if (v is double d) return Math.Abs(d) > 0.000001;
+        if (bool.TryParse(v.ToString(), out var pb)) return pb;
+        if (long.TryParse(v.ToString(), out var pl)) return pl != 0;
         return def;
     }
 }
