@@ -5,6 +5,7 @@ public class StageIndexPresenter : IDisposable
     private StageIndexView _stageIndexView;
     private StageManager _stageManager;
 
+    private bool _activated;
 
     public StageIndexPresenter(StageIndexView stageIndexView, StageManager stageManager)
     {
@@ -14,14 +15,20 @@ public class StageIndexPresenter : IDisposable
     public void Initialize() { /*no op*/ }
     public void Activate()
     {
-        _stageManager.OnStageChanged += SetText;
+        if (_activated) return;
+        _activated = true;
+
+        _stageManager.OnStageChanged += OnStageChanged;
     }
     public void Dispose()
     {
-        _stageManager.OnStageChanged -= SetText;
+        if (!_activated) return;
+        _activated = false;
+
+        _stageManager.OnStageChanged -= OnStageChanged;
     }
 
-    private void SetText(int stageIndex)
+    private void OnStageChanged(int stageIndex)
     {
         _stageIndexView.SetStage(stageIndex);
     }
