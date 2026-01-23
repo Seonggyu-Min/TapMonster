@@ -38,7 +38,7 @@ public class NormalMonster : MonoBehaviour, IDamageable
 
     private void HandleDamaged(BigNumber applied)
     {
-        this.PrintLog($"몬스터 피격 받음: {applied.ToString()}", CurrentCategory);
+        this.PrintLog($"몬스터 피격 받음: {BigNumberFormatter.ToString(applied)}", CurrentCategory);
         OnDamaged?.Invoke(applied);
         // TODO: 피격 연출/HP바 갱신
     }
