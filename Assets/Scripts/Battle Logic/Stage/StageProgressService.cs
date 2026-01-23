@@ -1,6 +1,14 @@
-﻿public class StageProgressService
+﻿using System;
+
+public class StageProgressService
 {
     private readonly StageModel _stageModel;
+
+    public event Action<int> OnStageChanged
+    {
+        add => _stageModel.OnStageChanged += value;
+        remove => _stageModel.OnStageChanged -= value;
+    }
 
     public StageProgressService(StageModel stageModel)
     {
