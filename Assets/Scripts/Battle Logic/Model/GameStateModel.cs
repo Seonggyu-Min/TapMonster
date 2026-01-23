@@ -11,6 +11,7 @@ public class GameStateModel
     private SkillCooldownModel _skillCooldownModel;
     private SkillSlotModel _skillSlotModel;
     private StageModel _stageModel;
+    private MonsterHpModel _monsterHpModel;
     private UpgradeModel _upgradeModel;
     private WalletModel _walletModel;
 
@@ -23,6 +24,7 @@ public class GameStateModel
         SkillCooldownModel skillCooldownModel,
         SkillSlotModel skillSlotModel,
         StageModel stageModel,
+        MonsterHpModel monsterHpModel,
         UpgradeModel upgradeModel,
         WalletModel walletModel
         )
@@ -32,6 +34,7 @@ public class GameStateModel
         _skillCooldownModel = skillCooldownModel;
         _skillSlotModel = skillSlotModel;
         _stageModel = stageModel;
+        _monsterHpModel = monsterHpModel;
         _upgradeModel = upgradeModel;
         _walletModel = walletModel;
     }
@@ -42,6 +45,7 @@ public class GameStateModel
     public SkillCooldownModel SkillCooldownModel => _skillCooldownModel;    // 현재는 DTO 변환 안함
     public SkillSlotModel SkillSlotModel => _skillSlotModel;
     public StageModel StageModel => _stageModel;
+    public MonsterHpModel MonsterHpModel => _monsterHpModel;
     public UpgradeModel UpgradeModel => _upgradeModel;
     public WalletModel WalletModel => _walletModel;
 
@@ -93,6 +97,9 @@ public class GameStateModel
 
         // Stage
         ApplyStage(_stageModel, dto.StageDTO);
+
+        // Monster Hp
+        ApplyMonsterHp(_monsterHpModel, dto.MonsterHpDTO);
 
         // Wallet
         ApplyCurrencies(_walletModel, dto.WalletDTO.Currencies);
@@ -161,6 +168,21 @@ public class GameStateModel
     {
         int stage = stageDto?.CurrentStage ?? 1;
         stageModel.SetStage(Mathf.Max(1, stage));
+    }
+
+    private static void ApplyMonsterHp(MonsterHpModel model, MonsterHpDTO src)
+    {
+        if (model == null) return;
+        if (src == null || !src.HasValue || src.MaxHp == null || src.CurrentHp == null)
+        {
+            model.SetLoadedFlag(false);
+            return;
+        }
+
+        BigNumber max = new(src.MaxHp.Mantissa, src.MaxHp.Exponent);
+        BigNumber cur = new(src.CurrentHp.Mantissa, src.CurrentHp.Exponent);
+
+        model.SetSilently(max, cur);
     }
 
     private static void ApplyLevels(ILevelModel model, Dictionary<string, int> src)
