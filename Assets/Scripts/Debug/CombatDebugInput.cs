@@ -14,20 +14,34 @@ public class CombatDebugInput : MonoBehaviour
 
     private void Update()
     {
-        if (_ctx == null) return;
+        Debug.Log("tick");
+        if (_ctx == null)
+        {
+            Debug.Log("_ctx == null");
+            this.PrintLog("_ctx == null", CurrentCategory);
+            return;
+        }
+        Debug.Log("tick _ctx-check OK");
 
-        IDamageable target = _ctx.StageManager.CurrentEnemy;
-        if (target == null) return;
+        IDamageable target = _ctx.StageManager.CurrentTarget;
+        if (target == null)
+        {
+            Debug.Log("target == null");
+            this.PrintLog("target == null", CurrentCategory);
+            return;
+        }
 
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            _ctx.CombatManager.TryManual(target, TargetType.Normal);
+            _ctx.CombatManager.TryManual();
+            Debug.Log("Manual attack triggered.");
             this.PrintLog("Manual attack triggered.", CurrentCategory);
         }
 
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
-            _ctx.CombatManager.TrySkill(target, _testSkillId, TargetType.Normal);
+            _ctx.CombatManager.TrySkill(_testSkillId);
+            Debug.Log($"Skill {_testSkillId} used.");
             this.PrintLog($"Skill {_testSkillId} used.", CurrentCategory);
         }
     }
