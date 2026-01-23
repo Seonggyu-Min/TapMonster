@@ -8,15 +8,23 @@ public class StageConfigSO : ScriptableObject
     [Header("Stage Curve")]
     [SerializeField] private int _startStage = 1;
 
-    [Tooltip("Stage HP")]
-    [SerializeField] private BigNumber _baseBossHp = new BigNumber(1, 3);
+    [Header("Normal Monster HP")]
+    [SerializeField] private BigNumber _baseNormalHp = new(1, 1);
+    [SerializeField] private double _normalHpGrowth = 1.12;
+
+    [Header("Boss Monster HP")]
+    [SerializeField] private BigNumber _baseBossHp = new(1, 3);
     [SerializeField] private double _bossHpGrowth = 1.15;
 
-    // TODO: 오버라이드 대신 n 배수 마다 자동 보스처리
-    [Header("Stage Overrides")]
+    [Header("Boss Stage Settings")]
+    [SerializeField] private bool _useIntervalBoss = true;
+    [SerializeField] private int _bossInterval = 50;   // 50 스테이지마다 보스
+
+    [Header("Stage Overrides for Boss")]
     [SerializeField] private List<StageOverride> _overrides = new();
 
     private Dictionary<int, StageOverride> _overrideCache;
+
 
     [Serializable]
     public sealed class StageOverride
@@ -26,18 +34,24 @@ public class StageConfigSO : ScriptableObject
         public int BossPatternId; // BT 패턴 Id
     }
 
-    public BigNumber GetBossHp(int stage)
+    public bool IsBossStage(int stage)
     {
-        if (stage < _startStage) stage = _startStage;
+        if (stage < _startStage) return false;
 
         _overrideCache ??= BuildOverrideCache();
-        if (_overrideCache.TryGetValue(stage, out var ov))
-        {
-            return ov.BossHp;
-        }
+        // 1. Override 되면 무조건 Boss
+        if (_overrideCache.ContainsKey(stage)) return true;
+        // 2. N배수 규칙
+        if (_useIntervalBoss && stage % _bossInterval == 0) return true;
 
-        int delta = stage - _startStage;
-        return BigNumber.Pow(_baseBossHp, 1) * Math.Pow(_bossHpGrowth, delta);
+        return false;
+    }
+
+    public BigNumber GetMaxHp(int stage)
+    {
+        return IsBossStage(stage)
+            ? GetBossHp(stage)
+            : GetNormalHp(stage);
     }
 
     private Dictionary<int, StageOverride> BuildOverrideCache()
@@ -48,5 +62,28 @@ public class StageConfigSO : ScriptableObject
             dict[ov.Stage] = ov;
         }
         return dict;
+    }
+
+    private BigNumber GetBossHp(int stage)
+    {
+        if (stage < _startStage) stage = _startStage;
+
+        _overrideCache ??= BuildOverrideCache();
+
+        // 1) Override 있으면 그대로 사용
+        if (_overrideCache.TryGetValue(stage, out var ov))
+            return ov.BossHp;
+
+        // 2) 자동 보스 HP 커브
+        int delta = stage - _startStage;
+        return _baseBossHp * Math.Pow(_bossHpGrowth, delta);
+    }
+
+    private BigNumber GetNormalHp(int stage)
+    {
+        if (stage < _startStage) stage = _startStage;
+
+        int delta = stage - _startStage;
+        return _baseNormalHp * Math.Pow(_normalHpGrowth, delta);
     }
 }
