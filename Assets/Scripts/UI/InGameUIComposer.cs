@@ -7,6 +7,8 @@ public class InGameUIComposer : MonoBehaviour
 {
     #region Fields
 
+    #region SerializeField Refs
+
     [Header("Upgrade Panel Refs")]
     [SerializeField] private UpgradePanelView _upgradePanelView;
     
@@ -33,6 +35,14 @@ public class InGameUIComposer : MonoBehaviour
     [Header("Stage Index UI Refs")]
     [SerializeField] private StageIndexView _stageIndexView;
 
+    [Header("Wallet Balance UI Refs")]
+    [SerializeField] private WalletView _walletView;
+
+    [Header("Player View Refs")]
+    [SerializeField] private PlayerView _playerView;
+
+    #endregion
+
 
     private List<IDisposable> _disposables = new();
     private GameContext _gameContext;
@@ -50,6 +60,8 @@ public class InGameUIComposer : MonoBehaviour
     private MonsterHpUIPresenter _monsterHpUIPresenter;
     private DamageUIPresenter _damageUIPresenter;
     private StageIndexPresenter _stageIndexPresenter;
+    private WalletPresenter _walletPresenter;
+    private PlayerPresenter _playerPresenter;
 
     #endregion
 
@@ -164,6 +176,21 @@ public class InGameUIComposer : MonoBehaviour
             _gameContext.StageManager
             );
         _disposables.Add(_stageIndexPresenter);
+
+        _walletPresenter = new(
+            _walletView,
+            _gameContext.WalletManager
+            );
+        _disposables.Add(_walletPresenter);
+
+        _playerPresenter = new(
+            _playerView,
+            _gameContext.CombatManager,
+            _gameContext.SkillManager,
+            _gameConfigSO.ManualAttackConfigSO,
+            _gameConfigSO.SkillConfigSO
+            );
+        _disposables.Add(_playerPresenter);
     }
 
     private void InitializePresenters()
@@ -176,6 +203,8 @@ public class InGameUIComposer : MonoBehaviour
         _damageUIPresenter.Initialize();
         _monsterHpUIPresenter.Initialize();
         _stageIndexPresenter.Initialize();
+        _walletPresenter.Initialize();
+        _playerPresenter.Initialize();
 
         // Mono Behaviour Presenters
         _skillUIOrchestrator.Initialize(
@@ -195,6 +224,8 @@ public class InGameUIComposer : MonoBehaviour
         _damageUIPresenter.Activate();
         _monsterHpUIPresenter.Activate();
         _stageIndexPresenter.Activate();
+        _walletPresenter.Activate();
+        _playerPresenter.Activate();
     }
 
     private void DisposeAll()
