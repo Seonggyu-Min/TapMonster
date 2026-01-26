@@ -38,6 +38,9 @@ public class SkillConfigSO : ScriptableObject
 
         [Header("Icon")]
         public Sprite Icon;
+
+        [Header("Animation")]
+        public AnimationKey AnimationKey;
     }
 
     public bool TryGet(int id, out SkillDef def)
