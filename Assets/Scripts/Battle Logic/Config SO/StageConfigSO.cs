@@ -18,12 +18,15 @@ public class StageConfigSO : ScriptableObject
 
     [Header("Boss Stage Settings")]
     [SerializeField] private bool _useIntervalBoss = true;
-    [SerializeField] private int _bossInterval = 50;   // 50 스테이지마다 보스
+    [SerializeField] [Range(1, 500)]  private int _bossInterval = 50;   // 50 스테이지마다 보스
+    [SerializeField] [Range(5f, 500f)] private float _bossLimitTimer = 30f;   // 30초 안에 처치해야 됨
 
     [Header("Stage Overrides for Boss")]
     [SerializeField] private List<StageOverride> _overrides = new();
 
     private Dictionary<int, StageOverride> _overrideCache;
+
+    public float BossLimitTimer => _bossLimitTimer;
 
 
     [Serializable]

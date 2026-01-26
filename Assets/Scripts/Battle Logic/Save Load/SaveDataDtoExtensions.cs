@@ -23,6 +23,8 @@ public static class SaveDataDtoExtensions
         dto.SkillSlotDTO.Equipped ??= new int[SkillSlotModel.EquippedSlotCount];
         dto.SkillSlotDTO.Inventory ??= new();
 
+        dto.BossTimerDTO ??= new();
+
         return dto;
     }
 }

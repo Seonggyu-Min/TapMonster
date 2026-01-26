@@ -14,7 +14,8 @@ public enum SaveDirtyFlags
     Wallet = 1 << 4,
     SkillSlots = 1 << 5,
     MonsterHp = 1 << 6,
-    All = Stage | Relic | Upgrade | Skill | Wallet | SkillSlots | MonsterHp,
+    BossTimer = 1 << 7,
+    All = Stage | Relic | Upgrade | Skill | Wallet | SkillSlots | MonsterHp | BossTimer,
 }
 
 
@@ -44,6 +45,9 @@ public class SavePatchBuilder
 
         if ((dirty & SaveDirtyFlags.MonsterHp) != 0)
             WriteMonsterHpFromModel(updates, uid, gs.MonsterHpModel);
+
+        if ((dirty & SaveDirtyFlags.BossTimer) != 0)
+            WriteBossTimer(updates, uid, gs.BossTimerModel);
 
         return updates;
     }
@@ -171,5 +175,14 @@ public class SavePatchBuilder
 
         updates[DBRoutes.MonsterCurHpMantissa(uid)] = has ? cur.Mantissa : 0d;
         updates[DBRoutes.MonsterCurHpExponent(uid)] = has ? cur.Exponent : 0;
+    }
+
+    private static void WriteBossTimer(Dictionary<string, object> updates, string uid, BossTimerModel model)
+    {
+        bool isRunning = model != null && model.IsRunning;
+
+        updates[DBRoutes.BossTimerIsRunning(uid)] = isRunning;
+        updates[DBRoutes.BossTimerBossStage(uid)] = isRunning ? model.BossStage : 0;
+        updates[DBRoutes.BossTimerRemainingSeconds(uid)] = isRunning ? model.RemainingSeconds : 0f;
     }
 }

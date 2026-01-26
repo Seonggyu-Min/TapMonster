@@ -11,4 +11,5 @@
     public PurchaseManager PurchaseManager { get; init; }
     public StatManager StatManager { get; init; }
     public CombatCoordinator CombatCoordinator { get; init; }
+    public BossTimerCoordinator BossTimerCoordinator { get; init; }
 }

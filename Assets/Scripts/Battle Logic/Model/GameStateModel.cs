@@ -14,6 +14,7 @@ public class GameStateModel
     private MonsterHpModel _monsterHpModel;
     private UpgradeModel _upgradeModel;
     private WalletModel _walletModel;
+    private BossTimerModel _bossTimerModel;
 
     private const LogCategory CurrentCategory = LogCategory.GameLogic;
 
@@ -26,7 +27,8 @@ public class GameStateModel
         StageModel stageModel,
         MonsterHpModel monsterHpModel,
         UpgradeModel upgradeModel,
-        WalletModel walletModel
+        WalletModel walletModel,
+        BossTimerModel bossTimerModel
         )
     {
         _relicModel = relicModel;
@@ -37,7 +39,13 @@ public class GameStateModel
         _monsterHpModel = monsterHpModel;
         _upgradeModel = upgradeModel;
         _walletModel = walletModel;
+        _bossTimerModel = bossTimerModel;
     }
+
+    private BossTimerDTO _loadedBossTimerDTO;
+    public BossTimerDTO LoadedBossTimerDTO => _loadedBossTimerDTO;
+
+
 
 
     public RelicModel RelicModel => _relicModel;
@@ -48,6 +56,7 @@ public class GameStateModel
     public MonsterHpModel MonsterHpModel => _monsterHpModel;
     public UpgradeModel UpgradeModel => _upgradeModel;
     public WalletModel WalletModel => _walletModel;
+    public BossTimerModel BossTimerModel => _bossTimerModel;
 
     #endregion
 
@@ -78,6 +87,9 @@ public class GameStateModel
         FillLevels(dto.RelicLevels, _relicModel.RelicLevels);
         FillLevels(dto.UpgradeLevels, _upgradeModel.UpgradeLevels);
         FillLevels(dto.SkillLevels, _skillModel.SkillLevels);
+
+        // Boss Timer
+        FillBossTimer(dto.BossTimerDTO, _bossTimerModel);
 
         return dto;
     }
@@ -111,6 +123,9 @@ public class GameStateModel
 
         // Skill slots
         EnsureSkillSlots(_skillSlotModel, dto.SkillSlotDTO, out generated);
+
+        // Boss Timer
+        _loadedBossTimerDTO = dto.BossTimerDTO;
     }
 
     #endregion
@@ -162,6 +177,23 @@ public class GameStateModel
         {
             dst[kv.Key.ToString()] = kv.Value;
         }
+    }
+
+    private static void FillBossTimer(BossTimerDTO dst, BossTimerModel model)
+    {
+        if (dst == null) return;
+
+        if (model == null || !model.IsRunning)
+        {
+            dst.IsRunning = false;
+            dst.BossStage = 0;
+            dst.RemainingSeconds = 0f;
+            return;
+        }
+
+        dst.IsRunning = true;
+        dst.BossStage = model.BossStage;
+        dst.RemainingSeconds = model.RemainingSeconds;
     }
 
     private static void ApplyStage(StageModel stageModel, StageDTO stageDto)

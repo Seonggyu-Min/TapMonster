@@ -16,6 +16,8 @@ public class GameBootstrapper : MonoBehaviour
     private GameContext _gameContext;
 
     // Models
+    private GameStateModel _gameStateModel;
+
     private StageModel _stageModel;
     private MonsterHpModel _monsterHpModel;
     private RelicModel _relicModel;
@@ -24,7 +26,7 @@ public class GameBootstrapper : MonoBehaviour
     private SkillCooldownModel _skillCooldownModel;
     private SkillSlotModel _skillSlotModel; 
     private WalletModel _walletModel;
-    private GameStateModel _gameStateModel;
+    private BossTimerModel _bossTimerModel;
 
     // Services
     private SaveLoadService _saveLoadService;
@@ -48,6 +50,8 @@ public class GameBootstrapper : MonoBehaviour
     private RewardService _rewardService;
     private PurchaseService _purchaseService;
 
+    private BossTimerService _bossTimerService;
+
     // Managers
     // - Infrastructure Managers
     // - 게임 전반에서 공통적으로 사용되는 인프라/저장/구매 시스템
@@ -70,13 +74,13 @@ public class GameBootstrapper : MonoBehaviour
     // - 여러 Domain Manager와 Infrastructure를 조합하여
     // - 하나의 게임 흐름 및 유스케이스를 제공하는 상위 계층
     private CombatCoordinator _combatCoordinator;
-    // private BossTimerCoordinator _bossTimerCoordinator;
+    private BossTimerCoordinator _bossTimerCoordinator;
 
 
     private void Awake()
     {
         BuildContext();
-        _coordinator.Init(_gameContext);
+        _coordinator.Init(_gameStateModel, _gameContext);
         StartGameAsync(this.GetCancellationTokenOnDestroy()).Forget();
     }
 
@@ -90,8 +94,8 @@ public class GameBootstrapper : MonoBehaviour
     private async UniTaskVoid StartGameAsync(CancellationToken ct)
     {
         await _gameContext.SaveLoadManager.LoadAllAsync(ct);
-        _coordinator.Activate();
         ActivateManagers();
+        _coordinator.Activate();
     }
 
     private void BuildContext()
@@ -117,7 +121,9 @@ public class GameBootstrapper : MonoBehaviour
             WalletManager = _walletManager,
 
             RewardManager = _rewardManager,
-            PurchaseManager = _purchaseManager
+            PurchaseManager = _purchaseManager,
+
+            BossTimerCoordinator = _bossTimerCoordinator,
         };
 
         InitializeManagers();
@@ -133,6 +139,7 @@ public class GameBootstrapper : MonoBehaviour
         _skillCooldownModel = new();
         _skillSlotModel = new();
         _walletModel = new();
+        _bossTimerModel = new();
 
         _gameStateModel = new(
             relicModel: _relicModel,
@@ -142,7 +149,8 @@ public class GameBootstrapper : MonoBehaviour
             stageModel: _stageModel,
             monsterHpModel: _monsterHpModel,
             upgradeModel: _upgradeModel,
-            walletModel: _walletModel
+            walletModel: _walletModel,
+            bossTimerModel: _bossTimerModel
         );
     }
 
@@ -173,6 +181,8 @@ public class GameBootstrapper : MonoBehaviour
         _rewardService = new();
 
         _purchaseService = new(_walletService);
+
+        _bossTimerService = new(_bossTimerModel);
     }
 
     private void ConstructManagers()
@@ -197,6 +207,8 @@ public class GameBootstrapper : MonoBehaviour
         _walletManager = new(_walletService);
         _rewardManager = new(_rewardService, _gameConfigSO);
         _combatCoordinator = new(_combatService, _gameConfigSO.SkillConfigSO);
+        _bossTimerCoordinator = new(_bossTimerService, _gameConfigSO.StageConfigSO);
+
 
         _statManager = new(
             _statBuilderService,
@@ -220,6 +232,7 @@ public class GameBootstrapper : MonoBehaviour
             {
                 _skillManager
             });
+        _bossTimerCoordinator.Initialize(_saveMark, _stageManager, null); // TODO: IBossTimeLimitModifier 구현
         _statManager.Initialize(new IStatContributor[]
             {
                 _upgradeManager,
@@ -239,6 +252,7 @@ public class GameBootstrapper : MonoBehaviour
         _walletManager.Activate();
         _rewardManager.Activate();
         _combatCoordinator.Activate();
+        _bossTimerCoordinator.Activate();
         _statManager.Activate();
     }
 
@@ -247,6 +261,7 @@ public class GameBootstrapper : MonoBehaviour
     private void DeactivateManagers()
     {
         _statManager.Deactivate();
+        _bossTimerCoordinator.Deactivate();
         _combatCoordinator.Deactivate();
         _rewardManager.Deactivate();
         _walletManager.Deactivate();

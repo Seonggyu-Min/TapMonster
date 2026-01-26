@@ -29,6 +29,16 @@ public static class SnapshotParser
         // Monster
         dto.MonsterHpDTO = ReadMonsterHp(root);
 
+        // Boss Timer
+        dto.BossTimerDTO = new BossTimerDTO();
+        if (TryGetDict(root, DatabaseKeys.BossTimer, out var bossTimer))
+        {
+            dto.BossTimerDTO.IsRunning = ToBool(bossTimer[DatabaseKeys.IsRunning], false);
+            dto.BossTimerDTO.BossStage = (int)GetLong(bossTimer, DatabaseKeys.BossStage, 0);
+            dto.BossTimerDTO.RemainingSeconds = (float)GetDouble(bossTimer, DatabaseKeys.RemainingSeconds, 0d);
+        }
+
+
         // Wallet
         dto.WalletDTO = new WalletDTO();
         if (TryGetDict(root, DatabaseKeys.Wallet, out var wallet))

@@ -48,12 +48,18 @@ public static class DBRoutes
 
 
     // - Monster Hp
-    public static string MonsterHp(string uid) => DBPathMaker.Join(SaveData(uid), DatabaseKeys.MonsterHp);
-    public static string MonsterMaxHpMantissa(string uid) => DBPathMaker.Join(MonsterHp(uid), DatabaseKeys.MaxHp, DatabaseKeys.Mantissa);
-    public static string MonsterMaxHpExponent(string uid) => DBPathMaker.Join(MonsterHp(uid), DatabaseKeys.MaxHp, DatabaseKeys.Exponent);
-    public static string MonsterCurHpMantissa(string uid) => DBPathMaker.Join(MonsterHp(uid), DatabaseKeys.CurrentHp, DatabaseKeys.Mantissa);
-    public static string MonsterCurHpExponent(string uid) => DBPathMaker.Join(MonsterHp(uid), DatabaseKeys.CurrentHp, DatabaseKeys.Exponent);
-    public static string MonsterHpHasValue(string uid) => DBPathMaker.Join(MonsterHp(uid), DatabaseKeys.HasValue);
+    public static string MonsterHp(string uid) => DBPathMaker.Join(DatabaseKeys.Users, uid, DatabaseKeys.SaveData, DatabaseKeys.MonsterHp);
+    public static string MonsterMaxHpMantissa(string uid) => DBPathMaker.Join(DatabaseKeys.Users, uid, DatabaseKeys.SaveData, DatabaseKeys.MonsterHp, DatabaseKeys.MaxHp, DatabaseKeys.Mantissa);
+    public static string MonsterMaxHpExponent(string uid) => DBPathMaker.Join(DatabaseKeys.Users, uid, DatabaseKeys.SaveData, DatabaseKeys.MonsterHp, DatabaseKeys.MaxHp, DatabaseKeys.Exponent);
+    public static string MonsterCurHpMantissa(string uid) => DBPathMaker.Join(DatabaseKeys.Users, uid, DatabaseKeys.SaveData, DatabaseKeys.MonsterHp, DatabaseKeys.CurrentHp, DatabaseKeys.Mantissa);
+    public static string MonsterCurHpExponent(string uid) => DBPathMaker.Join(DatabaseKeys.Users, uid, DatabaseKeys.SaveData, DatabaseKeys.MonsterHp, DatabaseKeys.CurrentHp, DatabaseKeys.Exponent);
+    public static string MonsterHpHasValue(string uid) => DBPathMaker.Join(DatabaseKeys.Users, uid, DatabaseKeys.SaveData, DatabaseKeys.MonsterHp, DatabaseKeys.HasValue);
 
+
+    // - Boss Timer
+    public static string BossTimer(string uid) => DBPathMaker.Join(DatabaseKeys.Users, uid, DatabaseKeys.SaveData, DatabaseKeys.BossTimer);
+    public static string BossTimerIsRunning(string uid) => DBPathMaker.Join(DatabaseKeys.Users, uid, DatabaseKeys.SaveData, DatabaseKeys.BossTimer, DatabaseKeys.IsRunning);
+    public static string BossTimerBossStage(string uid) => DBPathMaker.Join(DatabaseKeys.Users, uid, DatabaseKeys.SaveData, DatabaseKeys.BossTimer, DatabaseKeys.BossStage);
+    public static string BossTimerRemainingSeconds(string uid) => DBPathMaker.Join(DatabaseKeys.Users, uid, DatabaseKeys.SaveData, DatabaseKeys.BossTimer, DatabaseKeys.RemainingSeconds);
 
 }

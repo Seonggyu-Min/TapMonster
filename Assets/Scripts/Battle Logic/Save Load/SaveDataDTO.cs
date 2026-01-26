@@ -12,6 +12,7 @@ public class SaveDataDTO
     public WalletDTO WalletDTO = new();
     public SkillSlotDTO SkillSlotDTO = new();
     public MonsterHpDTO MonsterHpDTO = new();
+    public BossTimerDTO BossTimerDTO = new();
 
     public Dictionary<string, int> RelicLevels = new();
     public Dictionary<string, int> UpgradeLevels = new();
@@ -47,6 +48,15 @@ public class MonsterHpDTO
     public BigNumberDTO MaxHp = new();
     public BigNumberDTO CurrentHp = new();
     public bool HasValue = false; // 저장된 값이 있는지 (초기 세이브 대응용)
+}
+
+
+[Serializable]
+public class BossTimerDTO
+{
+    public bool IsRunning;
+    public int BossStage;
+    public float RemainingSeconds;
 }
 
 

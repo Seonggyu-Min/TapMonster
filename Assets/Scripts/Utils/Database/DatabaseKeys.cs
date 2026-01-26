@@ -45,4 +45,9 @@ public static class DatabaseKeys
     public const string CurrentHp = "CurrentHp";
     public const string HasValue = "HasValue";
 
+    // - Boss Timer
+    public const string BossTimer = "BossTimer";
+    public const string IsRunning = "IsRunning";
+    public const string BossStage = "BossStage";
+    public const string RemainingSeconds = "RemainingSeconds";
 }
