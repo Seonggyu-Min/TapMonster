@@ -7,8 +7,8 @@
     public UpgradeManager UpgradeManager { get; init; }
     public SkillManager SkillManager { get; init; }
     public WalletManager WalletManager { get; init; }
-    public CombatManager CombatManager { get; init; }
     public RewardManager RewardManager { get; init; }
     public PurchaseManager PurchaseManager { get; init; }
     public StatManager StatManager { get; init; }
+    public CombatCoordinator CombatCoordinator { get; init; }
 }

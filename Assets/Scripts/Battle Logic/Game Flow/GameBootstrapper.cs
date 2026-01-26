@@ -49,22 +49,28 @@ public class GameBootstrapper : MonoBehaviour
     private PurchaseService _purchaseService;
 
     // Managers
+    // - Infrastructure Managers
+    // - 게임 전반에서 공통적으로 사용되는 인프라/저장/구매 시스템
     private SaveLoadManager _saveLoadManager;
     private ISaveMark _saveMark;
+    private PurchaseManager _purchaseManager;
+    private WalletManager _walletManager;
 
+    // - Domain Managers
+    // - 각 도메인의 상태(Model)와 규칙을 소유하는 핵심 로직 계층
+    // - 서로 독립적으로 작동
     private StageManager _stageManager;
     private RelicManager _relicManager;
     private UpgradeManager _upgradeManager;
     private SkillManager _skillManager;
-
-    private CombatManager _combatManager;
-    private WalletManager _walletManager;
-
     private RewardManager _rewardManager;
-    private PurchaseManager _purchaseManager;
-
     private StatManager _statManager;
 
+    // - Coordinators
+    // - 여러 Domain Manager와 Infrastructure를 조합하여
+    // - 하나의 게임 흐름 및 유스케이스를 제공하는 상위 계층
+    private CombatCoordinator _combatCoordinator;
+    // private BossTimerCoordinator _bossTimerCoordinator;
 
 
     private void Awake()
@@ -107,7 +113,7 @@ public class GameBootstrapper : MonoBehaviour
             UpgradeManager = _upgradeManager,
             SkillManager = _skillManager,
 
-            CombatManager = _combatManager,
+            CombatCoordinator = _combatCoordinator,
             WalletManager = _walletManager,
 
             RewardManager = _rewardManager,
@@ -190,7 +196,7 @@ public class GameBootstrapper : MonoBehaviour
         _skillManager = new(_skillService, _gameConfigSO);
         _walletManager = new(_walletService);
         _rewardManager = new(_rewardService, _gameConfigSO);
-        _combatManager = new(_combatService, _gameConfigSO.SkillConfigSO);
+        _combatCoordinator = new(_combatService, _gameConfigSO.SkillConfigSO);
 
         _statManager = new(
             _statBuilderService,
@@ -209,7 +215,7 @@ public class GameBootstrapper : MonoBehaviour
         _skillManager.Initialize(_saveMark, _purchaseManager);
         _walletManager.Initialize(_saveMark);
         _rewardManager.Initialize();
-        _combatManager.Initialize(_statManager, _skillManager, _stageManager,
+        _combatCoordinator.Initialize(_statManager, _skillManager, _stageManager,
             new IStatModifier[]
             {
                 _skillManager
@@ -232,7 +238,7 @@ public class GameBootstrapper : MonoBehaviour
         _skillManager.Activate();
         _walletManager.Activate();
         _rewardManager.Activate();
-        _combatManager.Activate();
+        _combatCoordinator.Activate();
         _statManager.Activate();
     }
 
@@ -241,7 +247,7 @@ public class GameBootstrapper : MonoBehaviour
     private void DeactivateManagers()
     {
         _statManager.Deactivate();
-        _combatManager.Deactivate();
+        _combatCoordinator.Deactivate();
         _rewardManager.Deactivate();
         _walletManager.Deactivate();
         _skillManager.Deactivate();

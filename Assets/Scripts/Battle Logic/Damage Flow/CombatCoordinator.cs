@@ -10,7 +10,7 @@ public interface ITargetProvider
 /// <summary>
 /// 공격 input의 단일 진입점입니다.
 /// </summary>
-public class CombatManager
+public class CombatCoordinator
 {
     private readonly CombatService _combatService;
     private readonly SkillConfigSO _skillConfigSO;
@@ -22,7 +22,7 @@ public class CombatManager
 
     public event Action<DamageResult> OnHit;
 
-    public CombatManager(CombatService combatService, SkillConfigSO skillConfigSO)
+    public CombatCoordinator(CombatService combatService, SkillConfigSO skillConfigSO)
     {
         _combatService = combatService;
         _skillConfigSO = skillConfigSO;

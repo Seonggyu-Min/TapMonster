@@ -33,14 +33,14 @@ public class CombatDebugInput : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            _ctx.CombatManager.TryManual();
+            _ctx.CombatCoordinator.TryManual();
             Debug.Log("Manual attack triggered.");
             this.PrintLog("Manual attack triggered.", CurrentCategory);
         }
 
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
-            _ctx.CombatManager.TrySkill(_testSkillId);
+            _ctx.CombatCoordinator.TrySkill(_testSkillId);
             Debug.Log($"Skill {_testSkillId} used.");
             this.PrintLog($"Skill {_testSkillId} used.", CurrentCategory);
         }

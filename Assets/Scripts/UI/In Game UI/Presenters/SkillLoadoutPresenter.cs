@@ -4,7 +4,7 @@ using UnityEngine;
 public class SkillLoadoutPresenter : IDisposable
 {
     private SkillManager _skillManager;
-    private CombatManager _combatManager;
+    private CombatCoordinator _combatCoordinator;
     private SkillConfigSO _skillConfigSO;
     private SkillLoadoutItemView[] _views;
 
@@ -14,13 +14,13 @@ public class SkillLoadoutPresenter : IDisposable
 
     public SkillLoadoutPresenter(
         SkillManager skillManager,
-        CombatManager combatManager,
+        CombatCoordinator combatCoordinator,
         SkillConfigSO skillConfigSO,
         SkillLoadoutItemView[] views
         )
     {
         _skillManager = skillManager;
-        _combatManager = combatManager;
+        _combatCoordinator = combatCoordinator;
         _skillConfigSO = skillConfigSO;
         _views = views;
     }
@@ -80,7 +80,7 @@ public class SkillLoadoutPresenter : IDisposable
 
         if (skillId == SkillId.None) return;
 
-        _combatManager.TrySkill(skillId);
+        _combatCoordinator.TrySkill(skillId);
     }
 
     private void OnSkillUsed(SkillUseEvent e)

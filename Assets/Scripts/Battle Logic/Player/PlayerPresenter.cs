@@ -3,7 +3,7 @@
 public class PlayerPresenter : IDisposable
 {
     private PlayerView _playerView;
-    private CombatManager _combatManager;
+    private CombatCoordinator _combatCoordinator;
     private SkillManager _skillManager;
     private ManualAttackConfigSO _manualAttackConfigSO;
     private SkillConfigSO _skillConfigSO;
@@ -12,14 +12,14 @@ public class PlayerPresenter : IDisposable
 
     public PlayerPresenter(
         PlayerView playerView,
-        CombatManager combatManager,
+        CombatCoordinator combatCoordinator,
         SkillManager skillManager,
         ManualAttackConfigSO manualAttackConfigSO,
         SkillConfigSO skillConfigSO
         )
     {
         _playerView = playerView;
-        _combatManager = combatManager;
+        _combatCoordinator = combatCoordinator;
         _skillManager = skillManager;
         _manualAttackConfigSO = manualAttackConfigSO;
         _skillConfigSO = skillConfigSO;
@@ -31,7 +31,7 @@ public class PlayerPresenter : IDisposable
         _activated = true;
 
         _skillManager.OnSkillUsed += HandleSkillAnimation;
-        _combatManager.OnHit += HandleManualAnimation;
+        _combatCoordinator.OnHit += HandleManualAnimation;
     }
     public void Dispose()
     {
@@ -39,7 +39,7 @@ public class PlayerPresenter : IDisposable
         _activated = false;
 
         _skillManager.OnSkillUsed -= HandleSkillAnimation;
-        _combatManager.OnHit -= HandleManualAnimation;
+        _combatCoordinator.OnHit -= HandleManualAnimation;
     }
 
     private void HandleManualAnimation(DamageResult damageResult)

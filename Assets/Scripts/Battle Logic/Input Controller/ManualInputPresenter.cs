@@ -5,15 +5,15 @@ using UnityEngine.UI;
 public class ManualInputPresenter : IDisposable
 {
     private readonly Button _manualAttackButton;
-    private readonly CombatManager _combatManager;
+    private readonly CombatCoordinator _combatCoordinator;
 
     private bool _active;
     private const LogCategory CurrentCategory = LogCategory.UI;
 
-    public ManualInputPresenter(Button manualAttackButton, CombatManager combatManager)
+    public ManualInputPresenter(Button manualAttackButton, CombatCoordinator combatCoordinator)
     {
         _manualAttackButton = manualAttackButton;
-        _combatManager = combatManager;
+        _combatCoordinator = combatCoordinator;
     }
     public void Initialize() { /*no op*/ }
     public void Activate()
@@ -40,13 +40,13 @@ public class ManualInputPresenter : IDisposable
 
     private void OnClick()
     {
-        if (_combatManager == null)
+        if (_combatCoordinator == null)
         {
             this.PrintLog("_combatManager가 null입니다.", CurrentCategory, LogType.Error);
             return;
         }
 
-        _combatManager.TryManual();
+        _combatCoordinator.TryManual();
         this.PrintLog("Manual attack", CurrentCategory);
     }
 }
