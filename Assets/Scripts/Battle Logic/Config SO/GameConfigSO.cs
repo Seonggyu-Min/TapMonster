@@ -11,6 +11,7 @@ public class GameConfigSO : ScriptableObject
     [SerializeField] private UpgradeConfigSO _upgradeConfigSO;
     [SerializeField] private SkillConfigSO _skillConfigSO;
     [SerializeField] private ManualAttackConfigSO _manualAttackConfigSO;
+    [SerializeField] private AutoAttackConfigSO _autoAttackConfigSO;
 
     public StageConfigSO StageConfigSO => _stageConfigSO;
     public RewardConfigSO RewardConfigSO => _rewardConfigSO;
@@ -20,4 +21,5 @@ public class GameConfigSO : ScriptableObject
     public UpgradeConfigSO UpgradeConfigSO => _upgradeConfigSO;
     public SkillConfigSO SkillConfigSO => _skillConfigSO;
     public ManualAttackConfigSO ManualAttackConfigSO => _manualAttackConfigSO;
+    public AutoAttackConfigSO AutoAttackConfigSO => _autoAttackConfigSO;
 }
