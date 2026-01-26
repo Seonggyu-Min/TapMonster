@@ -1,5 +1,4 @@
 ﻿using Cysharp.Threading.Tasks;
-using EditorAttributes;
 using System.Threading;
 using UnityEngine;
 
@@ -8,21 +7,31 @@ public class GameCoordinator : MonoBehaviour
     [Header("Spawn")]
     [SerializeField] private MonsterSpawner _monsterSpawner;
 
+    private GameStateModel _gameStateModel;
     private GameContext _gameContext;
     private bool _initialized;
 
     private const LogCategory CurrentCategory = LogCategory.GameLogic;
 
 
-    public void Init(GameContext gameContext)
+    public void Init(GameStateModel gameStateModel, GameContext gameContext)
     {
+        _gameStateModel = gameStateModel;
         _gameContext = gameContext;
         _initialized = true;
     }
 
     public void Activate()
     {
-        SpawnAndApplyLoadedHp();
+        ApplyLoadedBossTimer();     // 보스 타이머 DTO -> Model 적용
+        SpawnAndApplyLoadedHp();    // 최초 스폰 및 체력 로드
+        _gameContext.StageManager   // 보스면 타이머 표기용 이벤트 발생
+            .RaiseBossStageStartedIfBoss();
+    }
+
+    private void Update()
+    {
+        _gameContext.BossTimerCoordinator.Tick(Time.deltaTime);
     }
 
     private void OnDestroy()
@@ -44,38 +53,26 @@ public class GameCoordinator : MonoBehaviour
     }
 
 
-#if UNITY_EDITOR
-    [Button("테스트용 업그레이드")]
-    public void TestUpgradeClicked()
-    {
-        bool ok = _gameContext.UpgradeManager.TryUpgrade(10001);
-        if (!ok) return;
-
-        // 스탯 재계산
-        _gameContext.StatManager.MarkDirty();
-
-        // 자동 저장
-        _gameContext.SaveLoadManager.MarkDirty(SaveDirtyFlags.Upgrade | SaveDirtyFlags.Wallet);
-        _gameContext.SaveLoadManager.RequestSave();
-    }
-
-
-    [Button("테스트용 돈 얻기")]
-    public void TestEarnGold()
-    {
-        BigNumber before = _gameContext.WalletManager.Get(CurrencyId.Gold);
-        this.PrintLog($"얻기 전 - Mantissa: {before.Mantissa}, Exponent: {before.Exponent}", CurrentCategory);
-        _gameContext.WalletManager.Earn(CurrencyId.Gold, new BigNumber(1, 10));
-        BigNumber after = _gameContext.WalletManager.Get(CurrencyId.Gold);
-        this.PrintLog($"얻은 후 - Mantissa: {after.Mantissa}, Exponent: {after.Exponent}", CurrentCategory);
-    }
-#endif
-
     private async UniTaskVoid ForceSaveOnExitAsync()
     {
         CancellationToken ct = this.GetCancellationTokenOnDestroy();
         await _gameContext.SaveLoadManager.ForceSaveAsync(ct);
     }
+
+    private void ApplyLoadedBossTimer()
+    {
+        BossTimerDTO bt = _gameStateModel.LoadedBossTimerDTO;
+
+        if (bt != null)
+        {
+            _gameContext.BossTimerCoordinator.ApplyLoadedState(
+                bt.IsRunning,
+                bt.BossStage,
+                bt.RemainingSeconds
+            );
+        }
+    }
+
 
     private void SpawnAndApplyLoadedHp()
     {
