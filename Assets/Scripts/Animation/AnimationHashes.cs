@@ -17,6 +17,11 @@ public enum AnimationKey
     Player_Turn_2,
     Player_Unsheath_0,
     Player_Cast_Spell_0,
+
+
+    Enemy_Idle,
+    Enemy_Hit,
+    Enemy_Die,
 }
 
 public static class AnimationHashes
