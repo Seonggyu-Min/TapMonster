@@ -12,3 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a605b896b788d714b83032339adb63c9, type: 3}
   m_Name: Combat Config SO
   m_EditorClassIdentifier: 
+  _tapMultiplier: 1
+  _autoMultiplier: 0.3
+  _skillMultiplier: 2
+  _baseCritChance: 0.05
+  _baseCritMultiplier: 2
+  _autoAttackInterval: 1
