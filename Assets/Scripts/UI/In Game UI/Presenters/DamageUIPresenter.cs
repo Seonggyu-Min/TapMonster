@@ -3,19 +3,19 @@ using UnityEngine;
 
 public class DamageUIPresenter : IDisposable
 {
-    private readonly CombatManager _combatManager;
+    private readonly CombatCoordinator _combatCoordinator;
     private readonly DamageTextSpawner _spawner;
     private readonly RectTransform _spawnPoint;
 
     private bool _active;
 
     public DamageUIPresenter(
-        CombatManager combatManager,
+        CombatCoordinator combatCoordinator,
         DamageTextSpawner spawner,
         RectTransform spawnPoint
         )
     {
-        _combatManager = combatManager;
+        _combatCoordinator = combatCoordinator;
         _spawner = spawner;
         _spawnPoint = spawnPoint;
     }
@@ -27,9 +27,9 @@ public class DamageUIPresenter : IDisposable
         if (_active) return;
         _active = true;
 
-        if (_combatManager != null)
+        if (_combatCoordinator != null)
         {
-            _combatManager.OnHit += HandleHit;
+            _combatCoordinator.OnHit += HandleHit;
         }
     }
 
@@ -38,9 +38,9 @@ public class DamageUIPresenter : IDisposable
         if (!_active) return;
         _active = false;
 
-        if (_combatManager != null)
+        if (_combatCoordinator != null)
         {
-            _combatManager.OnHit -= HandleHit;
+            _combatCoordinator.OnHit -= HandleHit;
         }
     }
 
@@ -50,10 +50,10 @@ public class DamageUIPresenter : IDisposable
         if (r.AppliedDamage <= BigNumber.Zero) return;
         if (_spawnPoint == null) return;
 
-        // TODO: 크리티컬과 분리 혹은 스킬도
-        // if (r.IsCritical) / if (r.Source == DamageSource.Skill) 이거 쓰면 될 듯
+        // TODO: 스킬 분리 필요하면
+        // if (r.Source == DamageSource.Skill) 이거 쓰면 될 듯
 
         string text = BigNumberFormatter.ToString(r.AppliedDamage);
-        _spawner.Spawn(text, _spawnPoint);
+        _spawner.Spawn(text, _spawnPoint, r.IsCritical);
     }
 }

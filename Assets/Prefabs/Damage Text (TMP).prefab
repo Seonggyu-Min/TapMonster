@@ -162,6 +162,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _damageText: {fileID: 3626040059605818908}
   _canvasGroup: {fileID: 2770134262350501084}
+  _nonCriticalColor: {r: 1, g: 1, b: 1, a: 1}
+  _criticalColor: {r: 1, g: 0.2783019, b: 0.2783019, a: 1}
+  _criticalFontSizeIncreaseAmount: 10
   _riseY: 80
   _duration: 0.6
   _unscaledTime: 1
