@@ -7,8 +7,9 @@ public class InGameUIComposer : MonoBehaviour
 {
     #region Fields
 
+    // TODO: 너무 많아지면 분리고려
     #region SerializeField Refs
-
+    
     [Header("Upgrade Panel Refs")]
     [SerializeField] private UpgradePanelView _upgradePanelView;
     
@@ -44,6 +45,10 @@ public class InGameUIComposer : MonoBehaviour
     [Header("Auto Attacker View Refs")]
     [SerializeField] private AutoAttackerView _autoAttackerView;
 
+    [Header("Boss Timer View Refs")]
+    [SerializeField] private BossTimerView _bossTimerView;
+
+
     #endregion
 
 
@@ -66,6 +71,8 @@ public class InGameUIComposer : MonoBehaviour
     private WalletPresenter _walletPresenter;
     private PlayerPresenter _playerPresenter;
     private AutoAttackerPresenter _autoAttackerPresenter;
+    private BossTimerPresenter _bossTimerPresenter;
+
 
     #endregion
 
@@ -204,6 +211,12 @@ public class InGameUIComposer : MonoBehaviour
             this
             );
         _disposables.Add(_autoAttackerPresenter);
+
+        _bossTimerPresenter = new(
+            _bossTimerView,
+            _gameContext.BossTimerCoordinator
+            );
+        _disposables.Add(_bossTimerPresenter);
     }
 
     private void InitializePresenters()
@@ -219,6 +232,7 @@ public class InGameUIComposer : MonoBehaviour
         _walletPresenter.Initialize();
         _playerPresenter.Initialize();
         _autoAttackerPresenter.Initialize();
+        _bossTimerPresenter.Initialize();
 
         // Mono Behaviour Presenters
         _skillUIOrchestrator.Initialize(
@@ -241,6 +255,7 @@ public class InGameUIComposer : MonoBehaviour
         _walletPresenter.Activate();
         _playerPresenter.Activate();
         _autoAttackerPresenter.Activate();
+        _bossTimerPresenter.Activate();
     }
 
     private void DisposeAll()
