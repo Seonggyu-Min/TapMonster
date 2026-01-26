@@ -34,6 +34,4 @@ public class WalletManager
             _saveMark.RequestSave();
         }
     }
-
-    public bool CanAfford(CurrencyId id, BigNumber cost) => _walletService.CanPay(id, cost);
 }
