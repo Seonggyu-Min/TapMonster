@@ -18,4 +18,5 @@ public class StageProgressService
     public int CurrentStage => _stageModel.CurrentStage;
     public void SetStage(int stage) => _stageModel.SetStage(stage);
     public void AdvanceStage() => _stageModel.SetStage(_stageModel.CurrentStage + 1);
+    public void DecreaseStage() => _stageModel.SetStage(_stageModel.CurrentStage - 1);
 }
