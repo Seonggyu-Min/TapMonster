@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class NormalMonster : MonoBehaviour, IDamageable
 {
+    [SerializeField] private Animator _animator;
+
     public event Action<BigNumber> OnDamaged;
     public event Action OnDied;
 
@@ -14,6 +16,12 @@ public class NormalMonster : MonoBehaviour, IDamageable
     public bool IsDead => _stageManager != null && _stageManager.IsDead;
     public BigNumber CurrentHp => _stageManager?.CurrentHp ?? BigNumber.Zero;
     public BigNumber MaxHp => _stageManager?.MaxHp ?? BigNumber.Zero;
+
+
+    private void Awake()
+    {
+        this.TryBindComponent(ref _animator, CurrentCategory);
+    }
 
     public void Bind(StageManager stageManager)
     {
@@ -40,13 +48,29 @@ public class NormalMonster : MonoBehaviour, IDamageable
     {
         this.PrintLog($"몬스터 피격 받음: {BigNumberFormatter.ToString(applied)}", CurrentCategory);
         OnDamaged?.Invoke(applied);
-        // TODO: 피격 연출/HP바 갱신
+
+        PlayAnimation(AnimationKey.Enemy_Hit);
+        // TODO: Hit 애니메이션 Manual Damage와 Auto Damage 분리?
     }
 
     private void HandleDied()
     {
         this.PrintLog("몬스터 사망", CurrentCategory);
         OnDied?.Invoke();
-        // TODO: 사망 연출/풀 반환
+
+        PlayAnimation(AnimationKey.Enemy_Die);
+        // TODO: 풀 반환
+    }
+
+    private void PlayAnimation(AnimationKey key)
+    {
+        int hash = AnimationHashes.Get(key);
+        if (hash == 0)
+        {
+            this.PrintLog($"애니메이션을 찾을 수 없습니다 key: {key}", CurrentCategory, LogType.Warning);
+            return;
+        }
+
+        _animator.Play(hash, 0, 0f);
     }
 }
