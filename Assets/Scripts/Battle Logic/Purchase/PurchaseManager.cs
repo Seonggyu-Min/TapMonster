@@ -6,7 +6,6 @@
     public PurchaseManager(PurchaseService PurchaseService)
     {
         _purchaseService = PurchaseService;
-        
     }
 
     public void Initialize(ISaveMark saveMark)
