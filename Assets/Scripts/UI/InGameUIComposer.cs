@@ -29,7 +29,7 @@ public class InGameUIComposer : MonoBehaviour
 
     [Header("Damage Text UI Refs")]
     [SerializeField] private Transform _poolParent;              // 풀 보관용
-    [SerializeField] private RectTransform _spawnPoint;              // 스폰 포인트
+    [SerializeField] private RectTransform _spawnPoint;          // 스폰 포인트
     [SerializeField] private DamageTextView _damageTextViewPrefab;
 
     [Header("Stage Index UI Refs")]
@@ -40,6 +40,9 @@ public class InGameUIComposer : MonoBehaviour
 
     [Header("Player View Refs")]
     [SerializeField] private PlayerView _playerView;
+
+    [Header("Auto Attacker View Refs")]
+    [SerializeField] private AutoAttackerView _autoAttackerView;
 
     #endregion
 
@@ -62,6 +65,7 @@ public class InGameUIComposer : MonoBehaviour
     private StageIndexPresenter _stageIndexPresenter;
     private WalletPresenter _walletPresenter;
     private PlayerPresenter _playerPresenter;
+    private AutoAttackerPresenter _autoAttackerPresenter;
 
     #endregion
 
@@ -146,7 +150,7 @@ public class InGameUIComposer : MonoBehaviour
 
         _skillLoadoutPresenter = new(
             _gameContext.SkillManager,
-            _gameContext.CombatManager,
+            _gameContext.CombatCoordinator,
             _gameConfigSO.SkillConfigSO,
             _skillLoadoutItemViews
             );
@@ -154,12 +158,12 @@ public class InGameUIComposer : MonoBehaviour
 
         _manualInputPresenter = new(
             _manualAttackButton,
-            _gameContext.CombatManager
+            _gameContext.CombatCoordinator
             );
         _disposables.Add(_manualInputPresenter);
 
         _damageUIPresenter = new(
-            _gameContext.CombatManager,
+            _gameContext.CombatCoordinator,
             _poolHub.DamageTextSpawner,
             _spawnPoint
             );
@@ -185,12 +189,21 @@ public class InGameUIComposer : MonoBehaviour
 
         _playerPresenter = new(
             _playerView,
-            _gameContext.CombatManager,
+            _gameContext.CombatCoordinator,
             _gameContext.SkillManager,
             _gameConfigSO.ManualAttackConfigSO,
             _gameConfigSO.SkillConfigSO
             );
         _disposables.Add(_playerPresenter);
+
+        _autoAttackerPresenter = new(
+            _autoAttackerView,
+            _gameContext.CombatCoordinator,
+            _gameConfigSO.CombatConfigSO,
+            _gameConfigSO.AutoAttackConfigSO,
+            this
+            );
+        _disposables.Add(_autoAttackerPresenter);
     }
 
     private void InitializePresenters()
@@ -205,6 +218,7 @@ public class InGameUIComposer : MonoBehaviour
         _stageIndexPresenter.Initialize();
         _walletPresenter.Initialize();
         _playerPresenter.Initialize();
+        _autoAttackerPresenter.Initialize();
 
         // Mono Behaviour Presenters
         _skillUIOrchestrator.Initialize(
@@ -226,6 +240,7 @@ public class InGameUIComposer : MonoBehaviour
         _stageIndexPresenter.Activate();
         _walletPresenter.Activate();
         _playerPresenter.Activate();
+        _autoAttackerPresenter.Activate();
     }
 
     private void DisposeAll()

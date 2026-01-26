@@ -20,3 +20,4 @@ MonoBehaviour:
   _upgradeConfigSO: {fileID: 11400000, guid: d59819c744c5fb44db23c41ec0aec597, type: 2}
   _skillConfigSO: {fileID: 11400000, guid: 895e7f916b6037443bb2bcd74902893f, type: 2}
   _manualAttackConfigSO: {fileID: 11400000, guid: 1798761d726042e44a4cab9aec0e1913, type: 2}
+  _autoAttackConfigSO: {fileID: 11400000, guid: 44965e373c87f7f41ae2e88b9a662461, type: 2}
