@@ -1,6 +1,14 @@
-﻿public class RelicService
+﻿using System;
+
+public class RelicService
 {
     private RelicModel _relicModel;
+
+    public event Action<int, int> OnRelicLevelChanged
+    {
+        add => _relicModel.OnRelicLevelChanged += value;
+        remove => _relicModel.OnRelicLevelChanged -= value;
+    }
 
 
     public RelicService(RelicModel relicModel)

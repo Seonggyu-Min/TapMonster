@@ -1,4 +1,5 @@
 ﻿using System;
+using UnityEditor.SceneManagement;
 
 public class StageManager : ITargetProvider
 {
@@ -27,7 +28,8 @@ public class StageManager : ITargetProvider
         remove => _monsterHpService.OnDied -= value;
     }
     public event Action OnTargetChanged;
-
+    public event Action<int> OnBossStageStarted; // int: stage
+    public event Action<int> OnBossStageEnded;   // int: stage
 
 
     public StageManager(
@@ -82,7 +84,9 @@ public class StageManager : ITargetProvider
     // 스테이지 기준으로 모델 리셋
     public void SpawnOrResetEnemy()
     {
-        BigNumber maxHp = _stageMaxHpService.GetMonsterMaxHp(_stageProgressService.CurrentStage);
+        int currentStage = _stageProgressService.CurrentStage;
+
+        BigNumber maxHp = _stageMaxHpService.GetMonsterMaxHp(currentStage);
 
         this.PrintLog($"SpawnOrResetEnemy stage={CurrentStage} " +
             $"maxHp=({maxHp.Mantissa}, e{maxHp.Exponent})"
@@ -92,13 +96,50 @@ public class StageManager : ITargetProvider
         OnTargetChanged?.Invoke();
 
         _saveMark.MarkDirty(SaveDirtyFlags.MonsterHp);
+
+        if (_stageMaxHpService.IsBossStage(currentStage))
+        {
+            OnBossStageStarted?.Invoke(currentStage);
+        }
     }
 
     public BigNumber GetMonsterHpForCurrentStage()
         => _stageMaxHpService.GetMonsterMaxHp(_stageProgressService.CurrentStage);
 
+    public void RollbackFromBossTimeout()
+    {
+        int currentStage = _stageProgressService.CurrentStage;
+        if (!_stageMaxHpService.IsBossStage(currentStage)) return;
+
+        OnBossStageEnded?.Invoke(currentStage);
+        _stageProgressService.DecreaseStage();
+
+        _saveMark.MarkDirty(SaveDirtyFlags.Stage);
+        _saveMark.MarkDirty(SaveDirtyFlags.MonsterHp);
+        _saveMark.RequestSave();
+
+        SpawnOrResetEnemy();
+    }
+
+    public void RaiseBossStageStartedIfBoss()
+    {
+        int stage = _stageProgressService.CurrentStage;
+        if (_stageMaxHpService.IsBossStage(stage))
+        {
+            OnBossStageStarted?.Invoke(stage);
+        }
+    }
+
+
     private void HandleMonsterDefeated()
-    {    
+    {
+        int prevStage = _stageProgressService.CurrentStage;
+        bool wasBoss = _stageMaxHpService.IsBossStage(prevStage);
+        if (wasBoss)
+        {
+            OnBossStageEnded?.Invoke(prevStage);
+        }
+
         _stageProgressService.AdvanceStage();
 
         _saveMark.MarkDirty(SaveDirtyFlags.MonsterHp);

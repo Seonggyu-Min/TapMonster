@@ -14,6 +14,10 @@ public class SkillManager : IStatContributor, IStatModifier
     private PurchaseManager _purchaseManager;
     private ISaveMark _saveMark;
 
+    private bool _activated;
+
+    public event Action OnChanged;
+
     public event Action<int, int> OnSkillLevelChanged
     {
         add => _skillService.OnSkillLevelChanged += value;
@@ -58,8 +62,20 @@ public class SkillManager : IStatContributor, IStatModifier
         _purchaseManager = purchaseManager;
         _saveMark = saveMark;
     }
-    public void Activate() { /* no op*/ }
-    public void Deactivate() { /* no op*/ }
+    public void Activate()
+    {
+        if (_activated) return;
+        _activated = true;
+
+        _skillService.OnSkillLevelChanged += HandleSkillLevelChanged;
+    }
+    public void Deactivate()
+    {
+        if (!_activated) return;
+        _activated = false;
+
+        _skillService.OnSkillLevelChanged -= HandleSkillLevelChanged;
+    }
 
 
     public int GetLevel(int skillId)
@@ -139,4 +155,7 @@ public class SkillManager : IStatContributor, IStatModifier
         => _skillService.ReplaceEquipped(index, skillId);
     public void SetInitial(List<int> inventory, int[] equipped = null)
         => _skillService.SetInitial(inventory, equipped);
+
+
+    private void HandleSkillLevelChanged(int id, int level) => OnChanged?.Invoke();
 }

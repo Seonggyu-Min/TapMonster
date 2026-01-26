@@ -4,6 +4,8 @@
     private readonly GameConfigSO _gameConfigSO;
     private IStatContributor[] _statContributors;
 
+    private bool _activated;
+
     private bool _dirty = true;
     private PlayerStatSnapshot _cached;
 
@@ -16,10 +18,36 @@
     {
         _statContributors = statContributors;
     }
-    public void Activate() { /* no op*/ }
-    public void Deactivate() { /* no op*/ }
+    public void Activate()
+    {
+        if (_activated) return;
+        _activated = true;
 
-    public void MarkDirty()
+        if (_statContributors == null) return;
+
+        for (int i = 0; i < _statContributors.Length; i++)
+        {
+            IStatContributor c = _statContributors[i];
+            if (c == null) continue;
+            c.OnChanged += MarkDirty;
+        }
+    }
+    public void Deactivate()
+    {
+        if (!_activated) return;
+        _activated = false;
+
+        if (_statContributors == null) return;
+
+        for (int i = 0; i < _statContributors.Length; i++)
+        {
+            IStatContributor c = _statContributors[i];
+            if (c == null) continue;
+            c.OnChanged -= MarkDirty;
+        }
+    }
+
+    public void MarkDirty() // public으로 안쓸 수도?
     {
         _dirty = true;
     }

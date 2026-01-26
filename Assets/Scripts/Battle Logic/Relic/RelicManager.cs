@@ -1,10 +1,23 @@
-﻿public class RelicManager : IStatContributor
+﻿using System;
+
+public class RelicManager : IStatContributor
 {
     private readonly RelicService _relicService;
     private readonly RelicGachaService _relicGachaService;
     private readonly GameConfigSO _gameConfigSO;
     private PurchaseManager _purchaseManager;
     private ISaveMark _saveMark;
+
+    private bool _activated;
+
+    public event Action OnChanged;
+
+    public event Action<int, int> OnRelicLevelChanged
+    {
+        add => _relicService.OnRelicLevelChanged += value;
+        remove => _relicService.OnRelicLevelChanged -= value;
+    }
+
 
     public RelicManager(
         RelicService relicService,
@@ -21,8 +34,20 @@
         _saveMark = saveMark;
         _purchaseManager = purchaseManager;
     }
-    public void Activate() { /* no op*/ }
-    public void Deactivate() { /* no op*/ }
+    public void Activate()
+    {
+        if (_activated) return;
+        _activated = true;
+
+        _relicService.OnRelicLevelChanged += HandleRelicLevelChanged;
+    }
+    public void Deactivate()
+    {
+        if (!_activated) return;
+        _activated = false;
+
+        _relicService.OnRelicLevelChanged -= HandleRelicLevelChanged;
+    }
 
 
     public void TryGachaOnce()
@@ -48,4 +73,6 @@
     {
         _relicService.ApplyToStat(ref buildContext, _gameConfigSO);
     }
+
+    private void HandleRelicLevelChanged(int id, int level) => OnChanged?.Invoke();
 }

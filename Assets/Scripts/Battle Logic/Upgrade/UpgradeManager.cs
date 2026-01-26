@@ -7,6 +7,10 @@ public class UpgradeManager : IStatContributor
     private PurchaseManager _purchaseManager;
     private ISaveMark _saveMark;
 
+    private bool _activated;
+
+    public event Action OnChanged;
+
     public event Action<int, int> OnUpgradeLevelChanged
     {
         add => _upgradeService.OnUpgradeLevelChanged += value;
@@ -27,8 +31,20 @@ public class UpgradeManager : IStatContributor
         _purchaseManager = purchaseManager;
         _saveMark = saveMark;
     }
-    public void Activate() { /* no op*/ }
-    public void Deactivate() { /* no op*/ }
+    public void Activate()
+    {
+        if (_activated) return;
+        _activated = true;
+
+        _upgradeService.OnUpgradeLevelChanged += HandleUpgradeChanged;
+    }
+    public void Deactivate()
+    {
+        if (! _activated) return;
+        _activated = false;
+
+        _upgradeService.OnUpgradeLevelChanged -= HandleUpgradeChanged;
+    }
 
     public int GetLevel(int upgradeId)
     {
@@ -71,4 +87,6 @@ public class UpgradeManager : IStatContributor
     {
         _upgradeService.ApplyToStat(ref buildContext, _gameConfigSO);
     }
+
+    private void HandleUpgradeChanged(int id, int level) => OnChanged?.Invoke();
 }
